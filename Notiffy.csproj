@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>default</LangVersion>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="Assembly-CSharp">
+        <HintPath>libs\Managed\Assembly-CSharp.dll</HintPath>
+      </Reference>
+      <Reference Include="BepInEx">
+        <HintPath>libs\Managed\BepInEx.dll</HintPath>
+      </Reference>
+      <Reference Include="PluginConfigurator">
+        <HintPath>libs\Managed\PluginConfigurator.dll</HintPath>
+      </Reference>
+      <Reference Include="PluginConfiguratorComponents">
+        <HintPath>libs\Managed\PluginConfiguratorComponents.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine">
+        <HintPath>libs\Managed\UnityEngine.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.CoreModule">
+        <HintPath>libs\Managed\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,12 @@
+lib/
+bin/
+obj/
+/packages/
+/package_build/
+riderModule.iml
+/_ReSharper.Caches/
+*.dll
+*.DotSettings.user
+*.zip
+*.bak
+.idea/
