@@ -29,8 +29,12 @@ if (-not (Test-Path $ukManaged)) {
 }
 $ukDlls = @(
     "Assembly-CSharp.dll"
+    "Unity.TextMeshPro.dll"
     "UnityEngine.dll"
     "UnityEngine.CoreModule.dll"
+    "UnityEngine.UI.dll"
+    "UnityEngine.UIModule.dll"
+    "UnityEngine.TextRenderingModule.dll"
 )
 
 foreach ($dll in $ukDlls) {

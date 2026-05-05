@@ -1,7 +1,7 @@
 ﻿namespace Notiffy.API {
     /// <summary>
     /// Notification interface for applications. Based on FreeDesktop specs.
-    /// https://xdg-specs-technobaboo-f55ac9d85e73073a0c8831695ba0fb110849811c0.pages.freedesktop.org/notification-spec/latest/ar01s09.html
+    /// https://specifications.freedesktop.org/notification/latest-single/#protocol
     /// </summary>
     public interface INotificationServer {
         /// <summary>
@@ -21,5 +21,12 @@
         /// Causes a notification to be forcefully dismissed.
         /// </summary>
         void CloseNotification(uint id);
+
+        /// <summary>
+        /// Signal emitted when a notification is closed or expires.
+        /// uint: The ID of the notification.
+        /// ClosedReason: Why it was closed (Expired, Dismissed, etc.)
+        /// </summary>
+        event System.Action<uint, ClosedReason>? NotificationClosed;
     }
 }

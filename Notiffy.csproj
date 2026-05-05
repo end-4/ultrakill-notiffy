@@ -19,11 +19,23 @@
       <Reference Include="PluginConfiguratorComponents">
         <HintPath>libs\Managed\PluginConfiguratorComponents.dll</HintPath>
       </Reference>
+      <Reference Include="Unity.TextMeshPro">
+        <HintPath>libs\Managed\Unity.TextMeshPro.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine">
         <HintPath>libs\Managed\UnityEngine.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>libs\Managed\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.TextRenderingModule">
+        <HintPath>libs\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.UI">
+        <HintPath>libs\Managed\UnityEngine.UI.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.UIModule">
+        <HintPath>libs\Managed\UnityEngine.UIModule.dll</HintPath>
       </Reference>
     </ItemGroup>
 

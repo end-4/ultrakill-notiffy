@@ -4,7 +4,7 @@ namespace Notiffy.API {
 
     /// <summary>
     /// Represents a request to display a notification to the user. Based on FreeDesktop specs.
-    /// https://xdg-specs-technobaboo-f55ac9d85e73073a0c8831695ba0fb110849811c0.pages.freedesktop.org/notification-spec/latest/ar01s02.html
+    /// https://specifications.freedesktop.org/notification/latest-single/#basic-design
     /// </summary>
     public struct Notification {
         /// <summary>
@@ -15,7 +15,7 @@ namespace Notiffy.API {
         /// <summary>
         /// An optional ID of an existing notification that this notification is intended to replace.
         /// </summary>
-        public int ReplacesId;
+        public uint ReplacesId;
 
         /// <summary>
         /// The icon for the notification.
