@@ -19,14 +19,29 @@
       <Reference Include="PluginConfiguratorComponents">
         <HintPath>libs\Managed\PluginConfiguratorComponents.dll</HintPath>
       </Reference>
+      <Reference Include="Unity.Addressables">
+        <HintPath>libs\Managed\Unity.Addressables.dll</HintPath>
+      </Reference>
+      <Reference Include="Unity.ResourceManager">
+        <HintPath>libs\Managed\Unity.ResourceManager.dll</HintPath>
+      </Reference>
       <Reference Include="Unity.TextMeshPro">
         <HintPath>libs\Managed\Unity.TextMeshPro.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine">
         <HintPath>libs\Managed\UnityEngine.dll</HintPath>
       </Reference>
+      <Reference Include="UnityEngine.AssetBundleModule">
+        <HintPath>libs\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      </Reference>
       <Reference Include="UnityEngine.CoreModule">
         <HintPath>libs\Managed\UnityEngine.CoreModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.ImageConversionModule">
+        <HintPath>libs\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      </Reference>
+      <Reference Include="UnityEngine.InputLegacyModule">
+        <HintPath>libs\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
       </Reference>
       <Reference Include="UnityEngine.TextRenderingModule">
         <HintPath>libs\Managed\UnityEngine.TextRenderingModule.dll</HintPath>

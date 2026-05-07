@@ -3,7 +3,9 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
 using Notiffy.API;
+using Notiffy.UI;
 using UnityEngine;
+using Input = UnityEngine.Input;
 
 namespace Notiffy {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
@@ -17,14 +19,20 @@ namespace Notiffy {
         // Use the built-in Logger provided by BaseUnityPlugin
         internal static ManualLogSource Log;
 
-        private void Awake() {
+        void Awake() {
             Log = BepInEx.Logging.Logger.CreateLogSource(PluginName);
+
             Log.LogInfo("Notiffy is waking up...");
             ConfigManager.Initialize();
             NotificationSystem.Initialize();
+            NotificationController.Initialize();
+            Log.LogInfo("Notiffy Initialized");
+        }
 
-            Log.LogInfo("Notiffy Server and API Initialized.");
-
+        void Update() {
+            if (Input.GetKeyDown(ConfigManager.notificationPanelKey.value)) {
+                NotificationController.TogglePanel();
+            }
         }
     }
 }
