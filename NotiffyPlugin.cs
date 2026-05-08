@@ -30,8 +30,10 @@ namespace Notiffy {
         }
 
         void Update() {
-            if (Input.GetKeyDown(ConfigManager.notificationPanelKey.value)) {
-                NotificationController.TogglePanel();
+            if (!ConfigManager.UseModifierKey.value || Input.GetKey(ConfigManager.ModifierKey.value)) {
+                if (Input.GetKeyDown(ConfigManager.NotificationPanelKey.value)) {
+                    NotificationController.TogglePanel();
+                }
             }
         }
     }

@@ -25,14 +25,16 @@ namespace Notiffy.Server {
 
         // For notifying clients
         public event System.Action<uint, ClosedReason>? NotificationClosed;
+        public event System.Action<uint>? NotificationDeleted;
+        public event System.Action<uint, string>? ActionInvoked;
 
         private bool NotificationIsActive(uint id) {
             return _activeNotifs.ContainsKey(id);
         }
 
         public void TrimHistory() {
-            if (_history.Count > ConfigManager.maxHistory.value) {
-                _history.RemoveRange(0, _history.Count - ConfigManager.maxHistory.value);
+            if (_history.Count > ConfigManager.MaxHistory.value) {
+                _history.RemoveRange(0, _history.Count - ConfigManager.MaxHistory.value);
             }
         }
 
@@ -47,19 +49,20 @@ namespace Notiffy.Server {
             _history.RemoveAt(index);
         }
 
-        public void DeleteNotification(uint id, ClosedReason reason = ClosedReason.Dismissed) {
-            if (NotificationIsActive(id)) CloseNotification(id, reason);
+        public void DeleteNotification(uint id, ClosedReason reason = ClosedReason.Dismissed, bool notifySenders = true) {
+            if (NotificationIsActive(id)) CloseNotification(id, reason, notifySenders);
             if (_history.FindIndex(x => x.Id == id) != -1) {
                 RemoveFromHistory(id);
+                if (notifySenders) NotificationDeleted?.Invoke(id);
                 OnNotificationDeleted?.Invoke(id);
             }
         }
 
-        public void CloseNotification(uint id, ClosedReason reason) {
+        public void CloseNotification(uint id, ClosedReason reason, bool notifySenders = true) {
             if (NotificationIsActive(id)) {
                 // Log.LogInfo($"Closing notification {id}");
                 _activeNotifs.Remove(id);
-                NotificationClosed?.Invoke(id, reason);
+                if (notifySenders) NotificationClosed?.Invoke(id, reason);
                 OnNotificationClosed?.Invoke(id, reason);
             }
         }
@@ -78,6 +81,16 @@ namespace Notiffy.Server {
                 if (delete) DeleteNotification(t);
                 else CloseNotification(t, ClosedReason.Dismissed);
             }
+        }
+
+        public void InvokeAction(uint id, string actionIdentifier) {
+            // Log.LogInfo($"Invoking notif {id} action {actionIdentifier}");
+            // Log.LogInfo($"Deleting notif {id}");
+            DeleteNotification(id, notifySenders: false);
+            // Log.LogInfo($"Deleted.");
+            // Log.LogInfo("Signaling senders");
+            ActionInvoked?.Invoke(id, actionIdentifier);
+            // Log.LogInfo("Signaled senders");
         }
 
         public uint Notify(Notification notification) {
@@ -116,7 +129,6 @@ namespace Notiffy.Server {
 
         // Handle timeouts
         void Update() {
-            // Log.LogInfo("Update");
             if (_activeNotifs.Count == 0) return;
             float currentTime = Time.time;
             _removalBuffer.Clear();
@@ -124,8 +136,11 @@ namespace Notiffy.Server {
             foreach (var entry in _activeNotifs.Values) {
                 // Use the individual notification's timeout if available, else fallback to global
                 float timeout = entry.Data.ExpirationTimeout > 0
-                    ? entry.Data.ExpirationTimeout
-                    : ConfigManager.defaultTimeout.value;
+                    ? (entry.Data.ExpirationTimeout / 1000)
+                    : ConfigManager.DefaultTimeout.value;
+                if (entry.Data.Hints?.TryGetValue("urgency", out var u) ?? false) { // Do not expire critical notifications automatically
+                    if ((Urgency)u == Urgency.Critical) timeout = currentTime - entry.StartTime + 1;
+                }
 
                 if (currentTime - entry.StartTime >= timeout) {
                     // Log.LogInfo($"Time notif {entry.Id}: {currentTime - entry.StartTime} / {timeout}");

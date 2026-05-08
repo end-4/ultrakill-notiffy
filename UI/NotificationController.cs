@@ -14,34 +14,44 @@ namespace Notiffy.UI {
         private static readonly string BundlePath = Path.Combine(NotiffyPlugin.workingDir, "assets", "notiffy_ui");
         private static GameObject? _notifPanel;
         private static GameObject? _notifPopupPanel;
-        private static AssetBundle? _bundle;
-        private static string _panelObjectName = "NotiffyPanel";
-        private static string _popupPanelObjectName = "NotiffyPopupPanel";
-        private static NotificationServer _server = NotificationSystem.Server;
+        private static readonly AssetBundle Bundle;
+        private const string PanelObjectName = "NotiffyPanel";
+        private const string PopupPanelObjectName = "NotiffyPopupPanel";
+        private static readonly NotificationServer Server = NotificationSystem.Server;
 
         private static readonly Dictionary<uint, GameObject> NotifObjectDict =
             new Dictionary<uint, GameObject>();
+
         private static readonly Dictionary<uint, GameObject> PopupNotifObjectDict =
             new Dictionary<uint, GameObject>();
 
         private static Sprite _largeBorder = Addressables
             .LoadAssetAsync<Sprite>("Assets/Textures/UI/Controls/Round_BorderLarge.png").WaitForCompletion();
+
         private static Sprite _largeFill = Addressables
             .LoadAssetAsync<Sprite>("Assets/Textures/UI/Controls/Round_FillLarge.png").WaitForCompletion();
 
-        public static void Initialize() {
-            if (_bundle != null) return; // Already initialized
+        static NotificationController() {
+            if (Bundle != null) return;
+            Bundle = AssetBundle.LoadFromFile(BundlePath);
+            if (Bundle == null) NotiffyPlugin.Log.LogError("Could not find asset bundle!");
+
             SceneManager.sceneLoaded += OnSceneLoaded;
 
-            _server.OnNotificationAdded += OnNotificationAdded;
-            _server.OnNotificationUpdated += OnNotificationUpdated;
-            _server.OnNotificationClosed += OnNotificationClosed;
-            _server.OnNotificationDeleted += OnNotificationDeleted;
+            Server.OnNotificationAdded += OnNotificationAdded;
+            Server.OnNotificationUpdated += OnNotificationUpdated;
+            Server.OnNotificationClosed += OnNotificationClosed;
+            Server.OnNotificationDeleted += OnNotificationDeleted;
+        }
+
+        public static void Initialize() {
         }
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
             ParentStuffToCanvas();
             UpdateSilentButtonFill();
+            // We hook this here because the first scene is loaded after things are already initialized
+            UserHints.IssueFirstRunNoticeIfNecessary();
         }
 
         private static void OnNotificationAdded(uint id, Notification notif) {
@@ -55,7 +65,10 @@ namespace Notiffy.UI {
                     newNotif.transform.SetParent(contentTransform, false);
                     NotifObjectDict.Add(id, newNotif);
                 }
+
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)contentTransform);
             }
+
             if (!NotificationSystem.Server.Silent && _notifPopupPanel != null && _notifPopupPanel.activeSelf) {
                 popupContentTransform = _notifPopupPanel.transform.Find("Viewport/PopupContent");
                 GameObject? newPopupNotif = CreateNotificationGameObject(notif, id, true);
@@ -63,6 +76,8 @@ namespace Notiffy.UI {
                     newPopupNotif.transform.SetParent(popupContentTransform, false);
                     PopupNotifObjectDict.Add(id, newPopupNotif);
                 }
+
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)popupContentTransform);
             }
         }
 
@@ -77,7 +92,6 @@ namespace Notiffy.UI {
         }
 
         private static void OnNotificationClosed(uint id, ClosedReason reason = ClosedReason.Expired) {
-            // NotiffyPlugin.Log.LogInfo($"Closed notif {id} with reason {reason}");
             if (PopupNotifObjectDict.TryGetValue(id, out var popupNotifObject)) {
                 Object.Destroy(popupNotifObject);
                 PopupNotifObjectDict.Remove(id);
@@ -113,15 +127,8 @@ namespace Notiffy.UI {
 
         private static GameObject? CreateNotificationGameObject(Notification notif, uint id, bool isPopup = false) {
             // Load prefab from bundle
-            _bundle = AssetBundle.LoadFromFile(BundlePath);
-            if (_bundle == null) {
-                // NotiffyPlugin.Log.LogError("Could not find asset bundle!");
-                return null;
-            }
-
-            GameObject notifPrefab = _bundle.LoadAsset<GameObject>("NotiffyNotification");
+            GameObject notifPrefab = Bundle.LoadAsset<GameObject>("NotiffyNotification");
             // NotiffyPlugin.Log.LogInfo($"Prefab asset: {notifPrefab}");
-            _bundle.Unload(false);
 
             // Make the game object
             GameObject newNotifObj = Object.Instantiate(notifPrefab);
@@ -130,6 +137,25 @@ namespace Notiffy.UI {
                 ? () => { NotificationSystem.Server.CloseNotification(id, ClosedReason.Dismissed); }
                 : () => { NotificationSystem.Server.DeleteNotification(id); });
             UpdateNotificationGameObjectContent(newNotifObj, notif);
+            if (notif.Actions?.Count > 0) {
+                GameObject actionButtonPrefab = Bundle.LoadAsset<GameObject>("NotiffyActionButton");
+                Transform actionLayout = newNotifObj.transform.Find("NotificationTextLayout/ActionLayout");
+                for (int i = 0; i + 1 < notif.Actions.Count; i += 2) {
+                    string identifier = notif.Actions[i];
+                    string displayText = notif.Actions[i + 1];
+                    GameObject actionButton = Object.Instantiate(actionButtonPrefab);
+                    actionButton.transform.SetParent(actionLayout.transform, false);
+                    actionButton.GetComponentInChildren<TextMeshProUGUI>().text = displayText;
+                    actionButton.GetComponent<Button>().onClick.AddListener(() => {
+                        NotificationSystem.Server.InvokeAction(id, identifier);
+                    });
+                }
+
+                LayoutRebuilder.ForceRebuildLayoutImmediate(actionLayout.GetComponent<RectTransform>());
+                Transform textLayout = newNotifObj.transform.Find("NotificationTextLayout");
+                LayoutRebuilder.ForceRebuildLayoutImmediate(textLayout.GetComponent<RectTransform>());
+                LayoutRebuilder.ForceRebuildLayoutImmediate(newNotifObj.GetComponent<RectTransform>());
+            }
 
             newNotifObj.SetActive(true);
             return newNotifObj;
@@ -153,22 +179,15 @@ namespace Notiffy.UI {
 
         private static void LoadPanelFromBundle() {
             // NotiffyPlugin.Log.LogInfo("RE-INSTANTIATING PANEL");
-            _bundle = AssetBundle.LoadFromFile(BundlePath);
-            if (_bundle == null) {
-                // NotiffyPlugin.Log.LogError("Could not find asset bundle!");
-                return;
-            }
 
             // Load prefab
-            GameObject panelPrefab = _bundle.LoadAsset<GameObject>("NotiffyPanel");
-            // NotiffyPlugin.Log.LogInfo($"Prefab asset: {panelPrefab}");
-            _bundle.Unload(false);
+            GameObject panelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPanel");
 
             // Instantiate
             _notifPanel = Object.Instantiate(panelPrefab);
             _notifPanel.SetActive(true);
             _notifPanel.SetActive(false);
-            _notifPanel.name = _panelObjectName; // Give it a fixed name to find later
+            _notifPanel.name = PanelObjectName; // Give it a fixed name to find later
             Object.DontDestroyOnLoad(_notifPanel);
 
             // Hook buttons
@@ -178,70 +197,60 @@ namespace Notiffy.UI {
             silentButton.onClick.AddListener(() => {
                 NotificationSystem.Server.ToggleSilence();
                 List<int> ids = [];
-                foreach (int id in PopupNotifObjectDict.Keys) {
-                    ids.Add(id);
-                }
-                foreach (uint id in ids) {
-                    OnNotificationClosed(id);
-                }
-
+                foreach (int id in PopupNotifObjectDict.Keys) ids.Add(id);
+                foreach (uint id in ids) OnNotificationClosed(id);
                 UpdateSilentButtonFill();
             });
 
-            // Add missed stuff
             SyncNotificationObjects();
         }
 
         private static void LoadPopupPanelFromBundle() {
             // NotiffyPlugin.Log.LogInfo("RE-INSTANTIATING POPUP PANEL");
-            _bundle = AssetBundle.LoadFromFile(BundlePath);
-            if (_bundle == null) {
-                // NotiffyPlugin.Log.LogError("Could not find asset bundle!");
-                return;
-            }
 
             // Load prefab
-            GameObject panelPrefab = _bundle.LoadAsset<GameObject>("NotiffyPopupScrollView");
-            // NotiffyPlugin.Log.LogInfo($"Prefab asset: {panelPrefab}");
-            _bundle.Unload(false);
+            GameObject panelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPopupScrollView");
 
             // Instantiate
             _notifPopupPanel = Object.Instantiate(panelPrefab);
             _notifPopupPanel.SetActive(true);
-            _notifPopupPanel.name = _popupPanelObjectName; // Give it a fixed name to find later
+            _notifPopupPanel.name = PopupPanelObjectName;
             Object.DontDestroyOnLoad(_notifPopupPanel);
         }
 
         private static void ParentStuffToCanvas() {
-            // 1. Find or create the panels
+            // Find or create the panels
             if (_notifPanel == null) {
                 // Try finding them first (it might have survived scene load)
-                _notifPanel = GameObject.Find(_panelObjectName);
-                _notifPopupPanel = GameObject.Find(_popupPanelObjectName);
+                _notifPanel = GameObject.Find(PanelObjectName);
+                _notifPopupPanel = GameObject.Find(PopupPanelObjectName);
                 if (_notifPanel == null) LoadPanelFromBundle();
                 if (_notifPopupPanel == null) LoadPopupPanelFromBundle();
             }
 
-            // 2. Find the Canvas in the new scene
+            // Find the Canvas in the new scene
             GameObject canvas = SceneManager.GetActiveScene().GetRootGameObjects()
                 .Where(obj => obj.name == "Canvas").FirstOrDefault();
             if (canvas != null && _notifPanel != null && _notifPopupPanel != null) {
                 Transform t = _notifPanel.transform;
                 Transform tPop = _notifPopupPanel.transform;
-                // 1. Parentize
+                // Parentize
                 t.SetParent(canvas.transform, false);
                 tPop.SetParent(canvas.transform, false);
-                // 2. Bring to front
+                // Bring to front
                 t.SetAsLastSibling();
                 tPop.SetAsLastSibling();
             }
         }
 
         public static void TogglePanel() {
-            // NotiffyPlugin.Log.LogInfo($"Notif panel {_notifPanel} name {_notifPanel?.name}");
             _notifPanel.SetActive(!_notifPanel.activeSelf);
             _notifPopupPanel.SetActive(!_notifPanel.activeSelf);
-            if (_notifPanel.activeSelf) NotificationSystem.Server.ClearNotifications(false);
+            if (_notifPanel.activeSelf) {
+                NotificationSystem.Server.ClearNotifications(false);
+                LayoutRebuilder.ForceRebuildLayoutImmediate(_notifPanel.transform
+                    .Find("Scroll View/Viewport/NotiffyPanelContent").GetComponent<RectTransform>());
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Notiffy.API {
@@ -39,6 +40,17 @@ namespace Notiffy.API {
         /// </summary>
         public int ExpirationTimeout;
 
-        // Not available (yet): Actions, Hints
+        /// <summary>
+        /// Notification hints.
+        /// Extra info outside the standard fields that the notification server may or may not make use of.
+        /// </summary>
+        public Dictionary<string,object> Hints;
+
+        /// <summary>
+        /// Actions are sent over as a list of pairs.
+        /// Each even element in the list (starting at index 0) represents the identifier for the action.
+        /// Each odd element in the list is the localized string that will be displayed to the user.
+        /// </summary>
+        public List<string> Actions;
     }
 }
