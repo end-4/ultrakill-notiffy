@@ -44,7 +44,7 @@ namespace Notiffy {
             DefaultTimeout = new FloatField(config.rootPanel, "Default timeout (secs)",
                 "defaultTimeout", 6);
             MaxHistory = new IntField(config.rootPanel, "Max history length", "maxHistory", 50);
-            UseModifierKey = new BoolField(config.rootPanel, "Use modifier key", "modifierKey", false);
+            UseModifierKey = new BoolField(config.rootPanel, "Use modifier key", "modifierKey", true);
             UseModifierKey.postValueChangeEvent += (bool newValue) => {
                 if (ModifierKey == null) return;
                 ModifierKey.interactable = newValue;

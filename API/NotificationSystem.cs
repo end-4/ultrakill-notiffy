@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Notiffy.Server;
 using Notiffy.UI;
 using Notiffy.Utils;
 using UnityEngine;
 using Logger = BepInEx.Logging.Logger;
+using Object = UnityEngine.Object;
 
 namespace Notiffy.API {
     public static class NotificationSystem {
@@ -68,19 +70,25 @@ namespace Notiffy.API {
         public static uint Notify(Notification notification) => Server.Notify(notification);
         public static void CloseNotification(uint id) => Server.CloseNotification(id);
 
-        public static event System.Action<uint, ClosedReason> NotificationClosed {
+        public static event Action<uint, ClosedReason> NotificationClosed {
             add => Server.NotificationClosed += value;
             remove => Server.NotificationClosed -= value;
         }
 
-        public static event System.Action<uint> NotificationDeleted {
+        public static event Action<uint> NotificationDeleted {
             add => Server.NotificationDeleted += value;
             remove => Server.NotificationDeleted -= value;
         }
 
-        public static event System.Action<uint, string> ActionInvoked {
+        public static event Action<uint, string> ActionInvoked {
             add => Server.ActionInvoked += value;
             remove => Server.ActionInvoked -= value;
+        }
+
+        public static event Action ReadyForScene;
+
+        internal static void SignalReadyForScene() {
+            ReadyForScene?.Invoke();
         }
 
         // Init

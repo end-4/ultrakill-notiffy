@@ -51,7 +51,7 @@ namespace Notiffy.UI {
             ParentStuffToCanvas();
             UpdateSilentButtonFill();
             // We hook this here because the first scene is loaded after things are already initialized
-            UserHints.IssueFirstRunNoticeIfNecessary();
+            NotificationSystem.SignalReadyForScene();
         }
 
         private static void OnNotificationAdded(uint id, Notification notif) {
@@ -137,9 +137,11 @@ namespace Notiffy.UI {
                 ? () => { NotificationSystem.Server.CloseNotification(id, ClosedReason.Dismissed); }
                 : () => { NotificationSystem.Server.DeleteNotification(id); });
             UpdateNotificationGameObjectContent(newNotifObj, notif);
+
+            Transform actionLayout = newNotifObj.transform.Find("NotificationTextLayout/ActionLayout");
+            Transform textLayout = newNotifObj.transform.Find("NotificationTextLayout");
             if (notif.Actions?.Count > 0) {
                 GameObject actionButtonPrefab = Bundle.LoadAsset<GameObject>("NotiffyActionButton");
-                Transform actionLayout = newNotifObj.transform.Find("NotificationTextLayout/ActionLayout");
                 for (int i = 0; i + 1 < notif.Actions.Count; i += 2) {
                     string identifier = notif.Actions[i];
                     string displayText = notif.Actions[i + 1];
@@ -151,11 +153,10 @@ namespace Notiffy.UI {
                     });
                 }
 
-                LayoutRebuilder.ForceRebuildLayoutImmediate(actionLayout.GetComponent<RectTransform>());
-                Transform textLayout = newNotifObj.transform.Find("NotificationTextLayout");
-                LayoutRebuilder.ForceRebuildLayoutImmediate(textLayout.GetComponent<RectTransform>());
-                LayoutRebuilder.ForceRebuildLayoutImmediate(newNotifObj.GetComponent<RectTransform>());
             }
+            LayoutRebuilder.ForceRebuildLayoutImmediate(actionLayout.GetComponent<RectTransform>());
+            LayoutRebuilder.ForceRebuildLayoutImmediate(textLayout.GetComponent<RectTransform>());
+            LayoutRebuilder.ForceRebuildLayoutImmediate(newNotifObj.GetComponent<RectTransform>());
 
             newNotifObj.SetActive(true);
             return newNotifObj;

@@ -15,4 +15,10 @@ public static class UserHints {
                 urgency: Urgency.Critical, iconFilePath: Path.Combine(NotiffyPlugin.workingDir, "icon.png"));
         }
     }
+
+    public static void Initialize() {}
+
+    static UserHints() {
+        NotificationSystem.ReadyForScene += IssueFirstRunNoticeIfNecessary;
+    }
 }
