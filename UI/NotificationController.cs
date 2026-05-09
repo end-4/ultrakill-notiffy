@@ -19,6 +19,12 @@ namespace Notiffy.UI {
         private const string PopupPanelObjectName = "NotiffyPopupPanel";
         private static readonly NotificationServer Server = NotificationSystem.Server;
 
+        private enum NotificationArea {
+            Popup,
+            Panel,
+            Both
+        };
+
         private static readonly Dictionary<uint, GameObject> NotifObjectDict =
             new Dictionary<uint, GameObject>();
 
@@ -55,10 +61,14 @@ namespace Notiffy.UI {
         }
 
         private static void OnNotificationAdded(uint id, Notification notif) {
+            OnNotificationAdded(id, notif, NotificationArea.Both);
+        }
+
+        private static void OnNotificationAdded(uint id, Notification notif, NotificationArea area) {
             // NotiffyPlugin.Log.LogInfo($"Created notification {id} with title {notif.Data.Summary}");
             // Find notif panel content
             Transform contentTransform, popupContentTransform;
-            if (_notifPanel != null) {
+            if (_notifPanel != null && area != NotificationArea.Popup) {
                 contentTransform = _notifPanel.transform.Find("Scroll View/Viewport/NotiffyPanelContent");
                 GameObject? newNotif = CreateNotificationGameObject(notif, id, false);
                 if (newNotif != null) {
@@ -69,7 +79,7 @@ namespace Notiffy.UI {
                 LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)contentTransform);
             }
 
-            if (!NotificationSystem.Server.Silent && _notifPopupPanel != null && _notifPopupPanel.activeSelf) {
+            if (!NotificationSystem.Server.Silent && _notifPopupPanel != null && _notifPopupPanel.activeSelf && area != NotificationArea.Panel) {
                 popupContentTransform = _notifPopupPanel.transform.Find("Viewport/PopupContent");
                 GameObject? newPopupNotif = CreateNotificationGameObject(notif, id, true);
                 if (newPopupNotif != null) {
@@ -152,8 +162,8 @@ namespace Notiffy.UI {
                         NotificationSystem.Server.InvokeAction(id, identifier);
                     });
                 }
-
             }
+
             LayoutRebuilder.ForceRebuildLayoutImmediate(actionLayout.GetComponent<RectTransform>());
             LayoutRebuilder.ForceRebuildLayoutImmediate(textLayout.GetComponent<RectTransform>());
             LayoutRebuilder.ForceRebuildLayoutImmediate(newNotifObj.GetComponent<RectTransform>());
@@ -166,7 +176,14 @@ namespace Notiffy.UI {
             NotifObjectDict.Clear();
             IReadOnlyList<NotificationEntry> hist = NotificationSystem.Server.History;
             for (int i = 0; i < hist.Count; i++) {
-                OnNotificationAdded(hist[i].Id, hist[i].Data);
+                OnNotificationAdded(hist[i].Id, hist[i].Data, NotificationArea.Panel);
+            }
+        }
+
+        private static void SyncPopupNotificationObjects() {
+            PopupNotifObjectDict.Clear();
+            foreach (var n in NotificationSystem.Server.ActiveNotifications) {
+                OnNotificationAdded(n.Id, n.Data, NotificationArea.Popup);
             }
         }
 
@@ -217,6 +234,8 @@ namespace Notiffy.UI {
             _notifPopupPanel.SetActive(true);
             _notifPopupPanel.name = PopupPanelObjectName;
             Object.DontDestroyOnLoad(_notifPopupPanel);
+
+            SyncPopupNotificationObjects();
         }
 
         private static void ParentStuffToCanvas() {
