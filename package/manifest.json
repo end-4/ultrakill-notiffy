@@ -3,7 +3,7 @@
     "author": "end_4",
     "version_number": "0.1.0",
     "website_url": "https://github.com/end-4/ultrakill-notiffy",
-    "description": "Notification system for Ultrakill. This is a library and does (practically) nothing on its own.",
+    "description": "Notification system for Ultrakill. This is a library and does nothing on its own.",
     "dependencies": [
         "BepInEx-BepInExPack-5.4.2100",
         "EternalsTeam-PluginConfigurator-1.10.2"
