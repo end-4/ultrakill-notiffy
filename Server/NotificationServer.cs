@@ -33,9 +33,13 @@ namespace Notiffy.Server {
         }
 
         public void TrimHistory() {
-            if (_history.Count > ConfigManager.MaxHistory.value) {
-                _history.RemoveRange(0, _history.Count - ConfigManager.MaxHistory.value);
+            if (_history.Count <= ConfigManager.MaxHistory.value) return;
+            _removalBuffer.Clear();
+            for (int i = 0; i < _history.Count - ConfigManager.MaxHistory.value; i++) {
+                var entry = _history[i];
+                _removalBuffer.Add(entry.Id);
             }
+            foreach (var t in _removalBuffer) DeleteNotification(t);
         }
 
         private void AddToHistory(NotificationEntry notification) {
@@ -49,7 +53,8 @@ namespace Notiffy.Server {
             _history.RemoveAt(index);
         }
 
-        public void DeleteNotification(uint id, ClosedReason reason = ClosedReason.Dismissed, bool notifySenders = true) {
+        public void DeleteNotification(uint id, ClosedReason reason = ClosedReason.Dismissed,
+            bool notifySenders = true) {
             if (NotificationIsActive(id)) CloseNotification(id, reason, notifySenders);
             if (_history.FindIndex(x => x.Id == id) != -1) {
                 RemoveFromHistory(id);
@@ -138,7 +143,8 @@ namespace Notiffy.Server {
                 float timeout = entry.Data.ExpirationTimeout > 0
                     ? (entry.Data.ExpirationTimeout / 1000)
                     : ConfigManager.DefaultTimeout.value;
-                if (entry.Data.Hints?.TryGetValue("urgency", out var u) ?? false) { // Do not expire critical notifications automatically
+                if (entry.Data.Hints?.TryGetValue("urgency", out var u) ?? false) {
+                    // Do not expire critical notifications automatically
                     if ((Urgency)u == Urgency.Critical) timeout = currentTime - entry.StartTime + 1;
                 }
 
