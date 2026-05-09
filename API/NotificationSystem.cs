@@ -8,11 +8,17 @@ using Logger = BepInEx.Logging.Logger;
 using Object = UnityEngine.Object;
 
 namespace Notiffy.API {
+    /// <summary>
+    /// The singleton that serves as the endpoint for interactions between Notiffy and other mods.
+    /// </summary>
+    /// <remarks>
+    /// Explore the NotifySend method to get started.
+    /// </remarks>
     public static class NotificationSystem {
         internal static NotificationServer Server;
 
         /// <summary>
-        /// A more convenient way to send notifications. Inspired by the notify-send utility on Linux.
+        /// Sends a notification using specified properties, with arguments similar to the notify-send utility on Linux.
         /// </summary>
         /// <param name="summary">Notification title</param>
         /// <param name="body">Notification body text</param>
@@ -66,33 +72,63 @@ namespace Notiffy.API {
             return Notify(n);
         }
 
-        // Interface
+        /// <summary>
+        /// Sends a Notification object.
+        /// </summary>
+        /// <param name="notification">The Notification object to send</param>
+        /// <returns>The ID of the created or updated notification</returns>
         public static uint Notify(Notification notification) => Server.Notify(notification);
-        public static void CloseNotification(uint id) => Server.CloseNotification(id);
 
+        /// <summary>
+        /// Closes (not delete) notification with the specified ID.
+        /// </summary>
+        /// <param name="id">ID of the closed notification</param>
+        public static void CloseNotification(uint id) => Server.CloseNotification(id);
+        
+
+        /// <summary>
+        /// Emitted when a notification is closed (not deleted). You most likely want NotificationDeleted instead.
+        /// The uint is notification ID and ClosedReason is the closed reason
+        /// </summary>
         public static event Action<uint, ClosedReason> NotificationClosed {
             add => Server.NotificationClosed += value;
             remove => Server.NotificationClosed -= value;
         }
 
+        /// <summary>
+        /// Emitted when a notification is deleted. 
+        /// uint: ID of the notification
+        /// </summary>
+        /// <remarks>
+        /// You can use this to know when to stop listening for an action response.
+        /// </remarks>
         public static event Action<uint> NotificationDeleted {
             add => Server.NotificationDeleted += value;
             remove => Server.NotificationDeleted -= value;
         }
 
+        /// <summary>
+        /// Emitted when an action is chosen by the user.
+        /// uint: ID of the notification
+        /// string: identifier of the action
+        /// </summary>
         public static event Action<uint, string> ActionInvoked {
             add => Server.ActionInvoked += value;
             remove => Server.ActionInvoked -= value;
         }
 
+        /// <summary>
+        /// [DEPRECATED] Emitted when the notification panels are ready for the currently loaded scene.
+        /// This was a hack to deal with race conditions and is no longer necessary
+        /// </summary>
+        [Obsolete]
         public static event Action ReadyForScene;
 
         internal static void SignalReadyForScene() {
             ReadyForScene?.Invoke();
         }
 
-        // Init
-        public static void Initialize() {
+        internal static void Initialize() {
         }
 
         static NotificationSystem() {

@@ -10,7 +10,7 @@ using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
 
 namespace Notiffy.UI {
-    public static class NotificationController {
+    internal static class NotificationController {
         private static readonly string BundlePath = Path.Combine(NotiffyPlugin.workingDir, "assets", "notiffy_ui");
         private static GameObject? _notifPanel;
         private static GameObject? _notifPopupPanel;

@@ -18,7 +18,7 @@ Set-StrictMode -Version Latest
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Definition
 $tmpPackageBuildDir = 'package_build'
-$assemblyName = 'Notiffy.dll'
+$modName = 'Notiffy'
 Write-Host "Repository root: $root"
 
 # 1) Prepare staging directory
@@ -31,7 +31,8 @@ New-Item -ItemType Directory -Path $staging | Out-Null
 
 # 2) Build the mod and copy it
 $modFolder = $root
-$assemblyPath = Join-Path $modFolder "bin/Release/netstandard2.1/$assemblyName"
+$assemblyPath = Join-Path $modFolder "bin/$Configuration/netstandard2.1/$modName.dll"
+$xmlPath = Join-Path $modFolder "bin/$Configuration/netstandard2.1/$modName.xml"
 Push-Location ($modFolder)
 Write-Host "Building mod in 'mod' using configuration: $Configuration"
 dotnet build -c $Configuration
@@ -40,6 +41,10 @@ if ($LASTEXITCODE -ne 0) {
     throw "dotnet build failed with exit code $LASTEXITCODE"
 }
 Copy-Item -Path ($assemblyPath) -Destination $staging -Recurse -Force
+if (Test-Path $xmlPath) {
+    Write-Host "Copying documentation: $(Split-Path $xmlPath -Leaf)"
+    Copy-Item -Path $xmlPath -Destination $staging -Force
+}
 Pop-Location
 
 # 3) Copy all files from package folder into staging
