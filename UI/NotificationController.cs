@@ -79,7 +79,7 @@ namespace Notiffy.UI {
                 LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)contentTransform);
             }
 
-            if (!NotificationSystem.Server.Silent && _notifPopupPanel != null && _notifPopupPanel.activeSelf && area != NotificationArea.Panel) {
+            if (!ConfigManager.Silent.value && _notifPopupPanel != null && _notifPopupPanel.activeSelf && area != NotificationArea.Panel) {
                 popupContentTransform = _notifPopupPanel.transform.Find("Viewport/PopupContent");
                 GameObject? newPopupNotif = CreateNotificationGameObject(notif, id, true);
                 if (newPopupNotif != null) {
@@ -192,7 +192,7 @@ namespace Notiffy.UI {
 
         private static void UpdateSilentButtonFill() {
             if (_notifPanel == null) return;
-            bool silent = NotificationSystem.Server.Silent;
+            bool silent = ConfigManager.Silent.value;
             Image btnBg = _notifPanel.transform.Find("Header/NotiffyHeaderSilent").GetComponent<Image>();
             Image icon = _notifPanel.transform.Find("Header/NotiffyHeaderSilent/Image").GetComponent<Image>();
             btnBg.sprite = silent ? _largeFill : _largeBorder;
@@ -231,7 +231,7 @@ namespace Notiffy.UI {
             clearButton.onClick.AddListener(() => { NotificationSystem.Server.ClearNotifications(); });
             Button silentButton = _notifPanel.transform.Find("Header/NotiffyHeaderSilent").GetComponent<Button>();
             silentButton.onClick.AddListener(() => {
-                NotificationSystem.Server.ToggleSilence();
+                ConfigManager.Silent.value = !ConfigManager.Silent.value;
                 List<int> ids = [];
                 foreach (int id in PopupNotifObjectDict.Keys) ids.Add(id);
                 foreach (uint id in ids) OnNotificationClosed(id);

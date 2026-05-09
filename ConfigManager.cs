@@ -21,6 +21,7 @@ namespace Notiffy {
         public static readonly BoolField FirstRun;
         public static readonly ButtonField SendTestNotificationButton;
         public static readonly ButtonField SendUrgentNotificationButton;
+        public static readonly BoolField Silent;
 
         private static readonly List<uint> ActiveNotifIds = new List<uint>();
 
@@ -52,9 +53,6 @@ namespace Notiffy {
 
             new ConfigHeader(config.rootPanel, "", 10);
             new ConfigHeader(config.rootPanel, "-- NOTIFICATION SYSTEM --", 24);
-            DefaultTimeout = new FloatField(config.rootPanel, "Default timeout (secs)",
-                "defaultTimeout", 6);
-            MaxHistory = new IntField(config.rootPanel, "Max history length", "maxHistory", 50);
             UseModifierKey = new BoolField(config.rootPanel, "Use modifier key", "modifierKey", true);
             UseModifierKey.postValueChangeEvent += (bool newValue) => {
                 if (ModifierKey == null) return;
@@ -72,6 +70,10 @@ namespace Notiffy {
                 NotificationController.UpdatePanelTitle();
             };
 
+            DefaultTimeout = new FloatField(config.rootPanel, "Default timeout (secs)",
+                "defaultTimeout", 6);
+            MaxHistory = new IntField(config.rootPanel, "Max history length", "maxHistory", 50);
+
             new ConfigHeader(config.rootPanel, "", 10);
             new ConfigHeader(config.rootPanel, "-- DEBUG --", 24);
             ShowDebugOptions = new BoolField(config.rootPanel, "Show debug options", "showDebugOptions", false);
@@ -82,10 +84,10 @@ namespace Notiffy {
                 new ButtonField(config.rootPanel, "Send test notification", "testNotification");
             SendTestNotificationButton.onClick += () => {
                 uint newId = NotificationSystem.NotifySend("Test notification",
-                    "Lorem ipsum ippai dashite tung tung tung tung random long bs text to test wrapping!!!",
+                    "The quick blue V1 jumps over the red V2. Sisyphus sells sea shells by the sea shore.",
                     iconFilePath: iconPath, actions: new Dictionary<string, string>() {
-                        { "yes", "Hell yeah!" },
-                        { "no", "I'll pass this time..." }
+                        { "hellYeah", "Hell yeah!" },
+                        { "noThanks", "I'll pass this time..." }
                     });
                 ActiveNotifIds.Add(newId);
             };
@@ -96,8 +98,11 @@ namespace Notiffy {
                     "This message should not disappear on its own.", urgency: Urgency.Critical);
             };
 
-            FirstRun = new BoolField(config.rootPanel, "First run", "firstRun", true, true);
+            FirstRun = new BoolField(config.rootPanel, "First run", "firstRun", true);
             UpdateDebugOptionsVisibility();
+
+            Silent = new BoolField(config.rootPanel, "Silent", "silent", false);
+            Silent.hidden = true;
 
             // Internal inits
             NotificationSystem.ActionInvoked += OnActionInvoked;

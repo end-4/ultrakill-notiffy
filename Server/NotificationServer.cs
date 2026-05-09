@@ -13,7 +13,6 @@ namespace Notiffy.Server {
         private readonly List<uint> _removalBuffer = new();
 
         // For the displaying client
-        public bool Silent = false;
         private readonly List<NotificationEntry> _history = [];
         public IReadOnlyList<NotificationEntry> History => _history;
         public IEnumerable<NotificationEntry> ActiveNotifications => _activeNotifs.Values;
@@ -70,10 +69,6 @@ namespace Notiffy.Server {
                 if (notifySenders) NotificationClosed?.Invoke(id, reason);
                 OnNotificationClosed?.Invoke(id, reason);
             }
-        }
-
-        public void ToggleSilence() {
-            Silent = !Silent;
         }
 
         public void ClearNotifications(bool delete = true) {
