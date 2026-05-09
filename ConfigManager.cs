@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using Notiffy.API;
+using Notiffy.UI;
 using PluginConfig.API;
 using PluginConfig.API.Decorators;
 using PluginConfig.API.Fields;
@@ -33,6 +34,17 @@ namespace Notiffy {
             FirstRun.hidden = !show;
         }
 
+        /// <summary>
+        /// Get keybind string for toggling notification panel
+        /// </summary>
+        /// <returns>the formatted string of the keybind</returns>
+        public static string GetFormattedPanelKeybind() {
+            string s = "";
+            if (UseModifierKey.value) s += "<color=#ff8000>" + ModifierKey.value.ToString() + "</color>+";
+            s += "<color=#ff8000>" + NotificationPanelKey.value.ToString() + "</color>";
+            return s;
+        }
+
         static ConfigManager() {
             config = PluginConfigurator.Create("Notiffy", NotiffyPlugin.PluginGUID);
             string iconPath = Path.Combine(NotiffyPlugin.workingDir, "icon.png");
@@ -50,9 +62,15 @@ namespace Notiffy {
             };
             ModifierKey =
                 new KeyCodeField(config.rootPanel, "Modifier key", "notificationPanelModkey", KeyCode.LeftAlt);
+            ModifierKey.postValueChangeEvent += (KeyCode _) => {
+                NotificationController.UpdatePanelTitle();
+            };
             ModifierKey.interactable = UseModifierKey.value;
             NotificationPanelKey =
                 new KeyCodeField(config.rootPanel, "Toggle panel keybind", "notificationPanelKey", KeyCode.N);
+            NotificationPanelKey.postValueChangeEvent += (KeyCode _) => {
+                NotificationController.UpdatePanelTitle();
+            };
 
             new ConfigHeader(config.rootPanel, "", 10);
             new ConfigHeader(config.rootPanel, "-- DEBUG --", 24);

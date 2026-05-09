@@ -14,10 +14,10 @@ namespace Notiffy.UI {
         private static readonly string BundlePath = Path.Combine(NotiffyPlugin.workingDir, "assets", "notiffy_ui");
         private static GameObject? _notifPanel;
         private static GameObject? _notifPopupPanel;
-        private static readonly AssetBundle Bundle;
         private const string PanelObjectName = "NotiffyPanel";
         private const string PopupPanelObjectName = "NotiffyPopupPanel";
         private static readonly NotificationServer Server = NotificationSystem.Server;
+        internal static readonly AssetBundle Bundle;
 
         private enum NotificationArea {
             Popup,
@@ -89,6 +89,7 @@ namespace Notiffy.UI {
 
                 LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)popupContentTransform);
             }
+            UpdatePanelEmptyPlaceholder();
         }
 
         private static void OnNotificationUpdated(uint id, Notification notif) {
@@ -99,6 +100,7 @@ namespace Notiffy.UI {
             if (PopupNotifObjectDict.TryGetValue(id, out var popupNotifObject)) {
                 UpdateNotificationGameObjectContent(popupNotifObject, notif);
             }
+            UpdatePanelEmptyPlaceholder();
         }
 
         private static void OnNotificationClosed(uint id, ClosedReason reason = ClosedReason.Expired) {
@@ -118,6 +120,7 @@ namespace Notiffy.UI {
                 Object.Destroy(popupNotifObject);
                 PopupNotifObjectDict.Remove(id);
             }
+            UpdatePanelEmptyPlaceholder();
         }
 
         private static void UpdateNotificationGameObjectContent(GameObject notifObj, Notification notif) {
@@ -145,7 +148,7 @@ namespace Notiffy.UI {
             Button closeButton = newNotifObj.transform.Find("CloseButton").GetComponent<Button>();
             closeButton.onClick.AddListener(isPopup
                 ? () => { NotificationSystem.Server.CloseNotification(id, ClosedReason.Dismissed); }
-                : () => { NotificationSystem.Server.DeleteNotification(id); });
+            : () => { NotificationSystem.Server.DeleteNotification(id); });
             UpdateNotificationGameObjectContent(newNotifObj, notif);
 
             Transform actionLayout = newNotifObj.transform.Find("NotificationTextLayout/ActionLayout");
@@ -188,11 +191,26 @@ namespace Notiffy.UI {
         }
 
         private static void UpdateSilentButtonFill() {
+            if (_notifPanel == null) return;
             bool silent = NotificationSystem.Server.Silent;
             Image btnBg = _notifPanel.transform.Find("Header/NotiffyHeaderSilent").GetComponent<Image>();
             Image icon = _notifPanel.transform.Find("Header/NotiffyHeaderSilent/Image").GetComponent<Image>();
             btnBg.sprite = silent ? _largeFill : _largeBorder;
             icon.color = silent ? Color.black : Color.white;
+        }
+
+        public static void UpdatePanelTitle() {
+            if (_notifPanel == null) return;
+            string newString = $"NOTIFICATIONS<size=60%> [{ConfigManager.GetFormattedPanelKeybind()}]";
+            TextMeshProUGUI headerText = _notifPanel.transform.Find("Header/NotiffyHeaderText")
+                .GetComponent<TextMeshProUGUI>();
+            headerText.text = newString;
+        }
+
+        public static void UpdatePanelEmptyPlaceholder() {
+            if (_notifPanel == null) return;
+            GameObject placeholder = _notifPanel.transform.Find("Scroll View/EmptyPlaceholder").gameObject;
+            placeholder.SetActive(NotifObjectDict.Count == 0);
         }
 
         private static void LoadPanelFromBundle() {
@@ -219,7 +237,8 @@ namespace Notiffy.UI {
                 foreach (uint id in ids) OnNotificationClosed(id);
                 UpdateSilentButtonFill();
             });
-
+            UpdatePanelTitle();
+            UpdatePanelEmptyPlaceholder();
             SyncNotificationObjects();
         }
 
