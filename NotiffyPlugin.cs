@@ -26,6 +26,7 @@ namespace Notiffy {
             ConfigManager.Initialize();
             NotificationSystem.Initialize();
             NotificationController.Initialize();
+            MenuPatcher.Initialize();
             UserHints.Initialize();
             Log.LogInfo("Notiffy Initialized");
         }
