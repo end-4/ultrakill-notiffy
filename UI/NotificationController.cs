@@ -80,7 +80,7 @@ namespace Notiffy.UI {
             }
 
             if (!ConfigManager.Silent.value && _notifPopupPanel != null && _notifPopupPanel.activeSelf && area != NotificationArea.Panel) {
-                popupContentTransform = _notifPopupPanel.transform.Find("Viewport/PopupContent");
+                popupContentTransform = _notifPopupPanel.transform;
                 GameObject? newPopupNotif = CreateNotificationGameObject(notif, id, true);
                 if (newPopupNotif != null) {
                     newPopupNotif.transform.SetParent(popupContentTransform, false);
@@ -244,16 +244,11 @@ namespace Notiffy.UI {
 
         private static void LoadPopupPanelFromBundle() {
             // NotiffyPlugin.Log.LogInfo("RE-INSTANTIATING POPUP PANEL");
-
-            // Load prefab
-            GameObject panelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPopupScrollView");
-
-            // Instantiate
-            _notifPopupPanel = Object.Instantiate(panelPrefab);
+            GameObject popupPrefab = Bundle.LoadAsset<GameObject>("NotiffyPopupContent");
+            _notifPopupPanel = Object.Instantiate(popupPrefab);
             _notifPopupPanel.SetActive(true);
             _notifPopupPanel.name = PopupPanelObjectName;
             Object.DontDestroyOnLoad(_notifPopupPanel);
-
             SyncPopupNotificationObjects();
         }
 
