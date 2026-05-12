@@ -2,11 +2,6 @@
 make-package.ps1
 
 Builds the mod, collects package files and assets, and creates a zip package.
-
-Usage: run this script from PowerShell. By default the zip is created in the repo root.
-Parameters:
-  -OutputDir <path>   Directory where the final zip will be written (default: script folder)
-  -Configuration <cfg> Build configuration (default: Release)
 #>
 
 param(
@@ -17,6 +12,7 @@ param(
 Set-StrictMode -Version Latest
 
 $root = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$packageFolder = Join-Path $root 'package'
 $tmpPackageBuildDir = 'package_build'
 $modName = 'Notiffy'
 Write-Host "Repository root: $root"
@@ -29,10 +25,15 @@ if (Test-Path $staging) {
 }
 New-Item -ItemType Directory -Path $staging | Out-Null
 
-# 2) Build the mod and copy it
+# Define the internal plugin path: plugins/ModName
+$pluginDest = Join-Path $staging "plugins/$modName"
+New-Item -ItemType Directory -Path $pluginDest -Force | Out-Null
+
+# 2) Build the mod and copy it to plugins/$modName
 $modFolder = $root
 $assemblyPath = Join-Path $modFolder "bin/$Configuration/netstandard2.1/$modName.dll"
 $xmlPath = Join-Path $modFolder "bin/$Configuration/netstandard2.1/$modName.xml"
+
 Push-Location ($modFolder)
 Write-Host "Building mod in 'mod' using configuration: $Configuration"
 dotnet build -c $Configuration
@@ -40,20 +41,27 @@ if ($LASTEXITCODE -ne 0) {
     Pop-Location
     throw "dotnet build failed with exit code $LASTEXITCODE"
 }
-Copy-Item -Path ($assemblyPath) -Destination $staging -Recurse -Force
+
+Write-Host "Copying binaries to: $pluginDest"
+Copy-Item -Path ($assemblyPath) -Destination $pluginDest -Force
 if (Test-Path $xmlPath) {
     Write-Host "Copying documentation: $(Split-Path $xmlPath -Leaf)"
-    Copy-Item -Path $xmlPath -Destination $staging -Force
+    Copy-Item -Path $xmlPath -Destination $pluginDest -Force
 }
 Pop-Location
 
-# 3) Copy all files from package folder into staging
-$packageFolder = Join-Path $root 'package'
+$iconSrc = Join-Path $packageFolder 'icon.png'
+if (Test-Path $iconSrc) {
+    Write-Host "Copying icon.png to plugin folder for internal use"
+    Copy-Item -Path $iconSrc -Destination $pluginDest -Force
+}
+
+# 3) Copy manifest, icon, and readme to root of staging
 if (-not (Test-Path $packageFolder)) { throw "package folder not found at $packageFolder" }
-Write-Host "Copying package files from '$packageFolder' to staging"
+Write-Host "Copying package files (manifest/icon) from '$packageFolder' to staging root"
 Copy-Item -Path (Join-Path $packageFolder '*') -Destination $staging -Recurse -Force
 
-# Try to read name/version from manifest.json for zip naming
+# Read name/version for zip naming
 $manifestPath = Join-Path $packageFolder 'manifest.json'
 $pkgName = 'package'
 $pkgVer = (Get-Date -Format yyyyMMddHHmmss)
@@ -63,17 +71,17 @@ if (Test-Path $manifestPath) {
         if ($manifest.name) { $pkgName = $manifest.name }
         if ($manifest.version_number) { $pkgVer = $manifest.version_number }
     } catch {
-        Write-Warning "Could not parse manifest.json for name/version. Falling back to timestamped name."
+        Write-Warning "Could not parse manifest.json for name/version."
     }
 }
 
-# 4) Create BepInEx/plugins/assets and copy assets
+# 4) Copy assets into plugins/$modName/assets
 $assetsSrc = Join-Path $root 'assets'
-$assetsDest = Join-Path $staging 'BepInEx/plugins/assets'
-Write-Host "Creating assets destination: $assetsDest"
-New-Item -ItemType Directory -Path $assetsDest -Force | Out-Null
+$assetsDest = Join-Path $pluginDest 'assets'
+
 if (Test-Path $assetsSrc) {
     Write-Host "Copying assets from '$assetsSrc' to '$assetsDest'"
+    New-Item -ItemType Directory -Path $assetsDest -Force | Out-Null
     Copy-Item -Path (Join-Path $assetsSrc '*') -Destination $assetsDest -Recurse -Force
 } else {
     Write-Warning "Assets folder not found at: $assetsSrc"
@@ -82,17 +90,11 @@ if (Test-Path $assetsSrc) {
 # 5) Create zip package
 $zipName = "$pkgName-$pkgVer.zip"
 $zipPath = Join-Path $OutputDir $zipName
-if (Test-Path $zipPath) { Write-Host "Removing existing zip: $zipPath"; Remove-Item $zipPath -Force }
+if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
 Write-Host "Creating zip: $zipPath"
 
-# # 6) Cleanup
-# Remove-Item -Path "$tmpPackageBuildDir" -Recurse -Force
-
-# Compress everything inside the staging folder so package root contains package files and BepInEx/...
+# Compress everything inside the staging folder
 Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $zipPath -Force
 
 Write-Host "Package created at: $zipPath"
-Write-Host "Staging folder retained at: $staging (remove if not needed)"
-
-# Return path for scripts / automation
 Write-Output $zipPath
