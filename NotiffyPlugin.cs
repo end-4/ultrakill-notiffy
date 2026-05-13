@@ -4,7 +4,6 @@ using BepInEx;
 using BepInEx.Logging;
 using Notiffy.API;
 using Notiffy.UI;
-using UnityEngine;
 using Input = UnityEngine.Input;
 
 namespace Notiffy {
@@ -21,13 +20,13 @@ namespace Notiffy {
 
         void Awake() {
             Log = BepInEx.Logging.Logger.CreateLogSource(PluginName);
-
             Log.LogInfo("Notiffy is waking up...");
             ConfigManager.Initialize();
             NotificationSystem.Initialize();
             NotificationController.Initialize();
             MenuPatcher.Initialize();
             UserHints.Initialize();
+
             Log.LogInfo("Notiffy Initialized");
         }
 
@@ -39,4 +38,6 @@ namespace Notiffy {
             }
         }
     }
+
+
 }

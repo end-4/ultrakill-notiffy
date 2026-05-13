@@ -79,7 +79,8 @@ namespace Notiffy.UI {
                 LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)contentTransform);
             }
 
-            if (!ConfigManager.Silent.value && _notifPopupPanel != null && _notifPopupPanel.activeSelf && area != NotificationArea.Panel) {
+            if (!ConfigManager.Silent.value && _notifPopupPanel != null && _notifPopupPanel.activeSelf &&
+                area != NotificationArea.Panel) {
                 popupContentTransform = _notifPopupPanel.transform;
                 GameObject? newPopupNotif = CreateNotificationGameObject(notif, id, true);
                 if (newPopupNotif != null) {
@@ -88,7 +89,9 @@ namespace Notiffy.UI {
                 }
 
                 LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)popupContentTransform);
+                UpdatePopupTail();
             }
+
             UpdatePanelEmptyPlaceholder();
         }
 
@@ -100,6 +103,7 @@ namespace Notiffy.UI {
             if (PopupNotifObjectDict.TryGetValue(id, out var popupNotifObject)) {
                 UpdateNotificationGameObjectContent(popupNotifObject, notif);
             }
+
             UpdatePanelEmptyPlaceholder();
         }
 
@@ -107,6 +111,7 @@ namespace Notiffy.UI {
             if (PopupNotifObjectDict.TryGetValue(id, out var popupNotifObject)) {
                 Object.Destroy(popupNotifObject);
                 PopupNotifObjectDict.Remove(id);
+                UpdatePopupTail();
             }
         }
 
@@ -120,7 +125,13 @@ namespace Notiffy.UI {
                 Object.Destroy(popupNotifObject);
                 PopupNotifObjectDict.Remove(id);
             }
+
             UpdatePanelEmptyPlaceholder();
+        }
+
+        public static void UpdateKeybindText() {
+            UpdatePanelTitle();
+            UpdatePopupTail();
         }
 
         private static void UpdateNotificationGameObjectContent(GameObject notifObj, Notification notif) {
@@ -148,7 +159,7 @@ namespace Notiffy.UI {
             Button closeButton = newNotifObj.transform.Find("CloseButton").GetComponent<Button>();
             closeButton.onClick.AddListener(isPopup
                 ? () => { NotificationSystem.Server.CloseNotification(id, ClosedReason.Dismissed); }
-            : () => { NotificationSystem.Server.DeleteNotification(id); });
+                : () => { NotificationSystem.Server.DeleteNotification(id); });
             UpdateNotificationGameObjectContent(newNotifObj, notif);
 
             Transform actionLayout = newNotifObj.transform.Find("NotificationTextLayout/ActionLayout");
@@ -208,9 +219,27 @@ namespace Notiffy.UI {
         }
 
         public static void UpdatePanelEmptyPlaceholder() {
-            if (_notifPanel == null) return;
+            if (_notifPanel is null) return;
             GameObject placeholder = _notifPanel.transform.Find("Scroll View/EmptyPlaceholder").gameObject;
             placeholder.SetActive(NotifObjectDict.Count == 0);
+        }
+
+        private static void UpdatePopupTailText() {
+            if (_notifPopupPanel is null) return;
+            bool hasPopupNotif = PopupNotifObjectDict.Count > 0;
+            string showWhat = hasPopupNotif ? "all notifications" : "notifications";
+            string newString = $"Show {showWhat}<size=80%> [{ConfigManager.GetFormattedPanelKeybind()}]";
+            TextMeshProUGUI popupTailBtnText = _notifPopupPanel.transform
+                .Find("ShowAllRow/ShowAllButton/ShowAllButtonText")
+                .GetComponent<TextMeshProUGUI>();
+            popupTailBtnText.text = newString;
+        }
+
+        private static void UpdatePopupTail() {
+            if (_notifPopupPanel is null) return;
+            UpdatePopupTailText();
+            GameObject showAllRow = _notifPopupPanel.transform.Find("ShowAllRow").gameObject;
+            showAllRow.SetActive(PopupNotifObjectDict.Count > 0 && PopupNotifObjectDict.Count < NotifObjectDict.Count);
         }
 
         private static void LoadPanelFromBundle() {
@@ -248,8 +277,13 @@ namespace Notiffy.UI {
             _notifPopupPanel = Object.Instantiate(popupPrefab);
             _notifPopupPanel.SetActive(true);
             _notifPopupPanel.name = PopupPanelObjectName;
+
+            Button showAllButton = _notifPopupPanel.transform.Find("ShowAllRow/ShowAllButton").GetComponent<Button>();
+            showAllButton.onClick.AddListener(OpenPanel);
+
             Object.DontDestroyOnLoad(_notifPopupPanel);
             SyncPopupNotificationObjects();
+            UpdatePopupTail();
         }
 
         private static void ParentStuffToCanvas() {
@@ -278,6 +312,7 @@ namespace Notiffy.UI {
         }
 
         public static void TogglePanel() {
+            if (_notifPanel is null || _notifPopupPanel is null) return;
             _notifPanel.SetActive(!_notifPanel.activeSelf);
             _notifPopupPanel.SetActive(!_notifPanel.activeSelf);
             if (_notifPanel.activeSelf) {
@@ -285,6 +320,16 @@ namespace Notiffy.UI {
                 LayoutRebuilder.ForceRebuildLayoutImmediate(_notifPanel.transform
                     .Find("Scroll View/Viewport/NotiffyPanelContent").GetComponent<RectTransform>());
             }
+        }
+
+        public static void OpenPanel() {
+            if (_notifPanel is null || _notifPopupPanel is null) return;
+            if (!_notifPanel.activeSelf) TogglePanel();
+        }
+
+        public static void ClosePanel() {
+            if (_notifPanel is null || _notifPopupPanel is null) return;
+            if (_notifPanel.activeSelf) TogglePanel();
         }
     }
 }

@@ -61,13 +61,13 @@ namespace Notiffy {
             ModifierKey =
                 new KeyCodeField(config.rootPanel, "Modifier key", "notificationPanelModkey", KeyCode.LeftAlt);
             ModifierKey.postValueChangeEvent += (KeyCode _) => {
-                NotificationController.UpdatePanelTitle();
+                NotificationController.UpdateKeybindText();
             };
             ModifierKey.interactable = UseModifierKey.value;
             NotificationPanelKey =
                 new KeyCodeField(config.rootPanel, "Toggle panel keybind", "notificationPanelKey", KeyCode.N);
             NotificationPanelKey.postValueChangeEvent += (KeyCode _) => {
-                NotificationController.UpdatePanelTitle();
+                NotificationController.UpdateKeybindText();
             };
 
             DefaultTimeout = new FloatField(config.rootPanel, "Default timeout (secs)",
