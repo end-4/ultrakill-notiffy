@@ -9,6 +9,7 @@ namespace Notiffy.UI;
 
 internal static class MenuPatcher {
     private static string PauseNotifToggleButtonName = "ToggleNotificationPanel";
+    private static GameObject _notifButton;
 
     private static GameObject? FindNestedObject(GameObject baseObject, string path, bool warnings = true) {
         Transform t = baseObject.transform;
@@ -17,20 +18,36 @@ internal static class MenuPatcher {
             string itemStr = pathItems[i];
             t = t.transform.Find(itemStr);
             if (t == null) {
-                if (warnings) NotiffyPlugin.Log.LogWarning(itemStr + " not found for object path " + baseObject.name + "/" + path);
+                if (warnings)
+                    NotiffyPlugin.Log.LogWarning(itemStr + " not found for object path " + baseObject.name + "/" +
+                                                 path);
                 return null;
             }
         }
+
         return t.gameObject;
     }
 
-    public static void Initialize() {}
+    public static void Initialize() {
+    }
+
     static MenuPatcher() {
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
         PatchPauseMenu();
+    }
+
+    public static void UpdateAppearance() {
+        // Positioning
+        RectTransform rt = _notifButton.GetComponent<RectTransform>();
+        rt.sizeDelta = new Vector2(rt.sizeDelta.y, rt.sizeDelta.y); // Square
+        bool alignWithConfiggy = ConfigManager.PauseMenuButtonType.value == PauseMenuButtonTypeEnum.MenuConfiggyAligned;
+        rt.localPosition = new Vector3(alignWithConfiggy ? 107 : 170, 90, 0);
+        // Show?
+        _notifButton.SetActive(ConfigManager.PauseMenuButtonType.value == PauseMenuButtonTypeEnum.MenuRight ||
+                               ConfigManager.PauseMenuButtonType.value == PauseMenuButtonTypeEnum.MenuConfiggyAligned);
     }
 
     private static void PatchPauseMenu() {
@@ -42,23 +59,19 @@ internal static class MenuPatcher {
         GameObject? resumeButton = FindNestedObject(canvas, "PauseMenu/Resume");
         if (pauseMenu == null || resumeButton == null) return;
         // Clone
-        GameObject notifButton = Object.Instantiate(resumeButton);
-        notifButton.transform.SetParent(pauseMenu.transform, false);
-        notifButton.name = PauseNotifToggleButtonName;
+        _notifButton = Object.Instantiate(resumeButton);
+        _notifButton.transform.SetParent(pauseMenu.transform, false);
+        _notifButton.name = PauseNotifToggleButtonName;
         // Set click behavior
-        Button buttonComponent = notifButton.GetComponent<Button>();
+        Button buttonComponent = _notifButton.GetComponent<Button>();
         buttonComponent.onClick = new Button.ButtonClickedEvent(); // nuke old behavior
         buttonComponent.onClick.AddListener(NotificationController.TogglePanel);
-        // Sizing & positioning
-        RectTransform rt = notifButton.GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(rt.sizeDelta.y, rt.sizeDelta.y); // Square
-        rt.localPosition = new Vector3(170, 90, 0);
         // Add icon
-        GameObject? childText = FindNestedObject(notifButton, "Text");
+        GameObject? childText = FindNestedObject(_notifButton, "Text");
         if (childText != null) Object.Destroy(childText);
         GameObject btnIconPrefab = NotificationController.Bundle.LoadAsset<GameObject>("NotiffyToggleIcon");
         GameObject btnIcon = Object.Instantiate(btnIconPrefab);
-        btnIcon.transform.SetParent(notifButton.transform, false);
+        btnIcon.transform.SetParent(_notifButton.transform, false);
 
         // Ensure the icon is centered and scaled correctly within the button
         RectTransform iconRt = btnIcon.GetComponent<RectTransform>();
@@ -66,7 +79,6 @@ internal static class MenuPatcher {
         iconRt.anchorMax = new Vector2(0.67f, 0.67f);
 
         btnIcon.SetActive(true);
-        notifButton.SetActive(true);
+        UpdateAppearance();
     }
-
 }

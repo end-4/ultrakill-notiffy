@@ -235,11 +235,15 @@ namespace Notiffy.UI {
             popupTailBtnText.text = newString;
         }
 
-        private static void UpdatePopupTail() {
+        public static void UpdatePopupTail() {
             if (_notifPopupPanel is null) return;
             UpdatePopupTailText();
             GameObject showAllRow = _notifPopupPanel.transform.Find("ShowAllRow").gameObject;
-            showAllRow.SetActive(PopupNotifObjectDict.Count > 0 && PopupNotifObjectDict.Count < NotifObjectDict.Count);
+            bool countCondition = PopupNotifObjectDict.Count > 0 && PopupNotifObjectDict.Count < NotifObjectDict.Count;
+            bool pauseCondition = ConfigManager.PauseMenuButtonType.value == PauseMenuButtonTypeEnum.Corner &&
+                                  (Time.timeScale == 0 && (OptionsManager.Instance?.paused ?? false));
+            showAllRow.GetComponent<HorizontalLayoutGroup>().padding.right = PopupNotifObjectDict.Count > 0 ? 6 : 0;
+            showAllRow.SetActive(countCondition || pauseCondition);
         }
 
         private static void LoadPanelFromBundle() {
@@ -256,7 +260,9 @@ namespace Notiffy.UI {
             Object.DontDestroyOnLoad(_notifPanel);
 
             // Hook buttons
-            Button clearButton = _notifPanel.transform.Find("Header/NotiffyHeaderClose").GetComponent<Button>();
+            Button closeButton = _notifPanel.transform.Find("NotiffyPanelClose/CloseButton").GetComponent<Button>();
+            closeButton.onClick.AddListener(ClosePanel);
+            Button clearButton = _notifPanel.transform.Find("Header/NotiffyHeaderClear").GetComponent<Button>();
             clearButton.onClick.AddListener(() => { NotificationSystem.Server.ClearNotifications(); });
             Button silentButton = _notifPanel.transform.Find("Header/NotiffyHeaderSilent").GetComponent<Button>();
             silentButton.onClick.AddListener(() => {

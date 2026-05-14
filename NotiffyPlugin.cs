@@ -4,6 +4,7 @@ using BepInEx;
 using BepInEx.Logging;
 using Notiffy.API;
 using Notiffy.UI;
+using UnityEngine;
 using Input = UnityEngine.Input;
 
 namespace Notiffy {
@@ -30,14 +31,21 @@ namespace Notiffy {
             Log.LogInfo("Notiffy Initialized");
         }
 
+        float previousTimeScale = 0;
+
         void Update() {
             if (!ConfigManager.UseModifierKey.value || Input.GetKey(ConfigManager.ModifierKey.value)) {
                 if (Input.GetKeyDown(ConfigManager.NotificationPanelKey.value)) {
                     NotificationController.TogglePanel();
                 }
             }
+
+            if (Time.timeScale * previousTimeScale > 0 || Time.timeScale + previousTimeScale == 0) {
+                // When pause state changed
+                NotificationController.UpdatePopupTail();
+            }
+
+            previousTimeScale = Time.timeScale;
         }
     }
-
-
 }

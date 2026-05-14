@@ -9,6 +9,13 @@ using PluginConfig.API.Functionals;
 using UnityEngine;
 
 namespace Notiffy {
+    public enum PauseMenuButtonTypeEnum {
+        MenuConfiggyAligned,
+        MenuRight,
+        Corner,
+        None,
+    }
+
     public class ConfigManager {
         public static PluginConfigurator? config;
 
@@ -17,6 +24,8 @@ namespace Notiffy {
         public static readonly BoolField UseModifierKey;
         public static readonly KeyCodeField ModifierKey;
         public static readonly KeyCodeField NotificationPanelKey;
+        public static readonly EnumField<PauseMenuButtonTypeEnum> PauseMenuButtonType;
+
         public static readonly BoolField ShowDebugOptions;
         public static readonly BoolField FirstRun;
         public static readonly ButtonField SendTestNotificationButton;
@@ -60,26 +69,27 @@ namespace Notiffy {
             };
             ModifierKey =
                 new KeyCodeField(config.rootPanel, "Modifier key", "notificationPanelModkey", KeyCode.LeftAlt);
-            ModifierKey.postValueChangeEvent += (KeyCode _) => {
-                NotificationController.UpdateKeybindText();
-            };
+            ModifierKey.postValueChangeEvent += (KeyCode _) => { NotificationController.UpdateKeybindText(); };
             ModifierKey.interactable = UseModifierKey.value;
             NotificationPanelKey =
                 new KeyCodeField(config.rootPanel, "Toggle panel keybind", "notificationPanelKey", KeyCode.N);
-            NotificationPanelKey.postValueChangeEvent += (KeyCode _) => {
-                NotificationController.UpdateKeybindText();
-            };
+            NotificationPanelKey.postValueChangeEvent += (KeyCode _) => { NotificationController.UpdateKeybindText(); };
 
             DefaultTimeout = new FloatField(config.rootPanel, "Default timeout (secs)",
                 "defaultTimeout", 6);
             MaxHistory = new IntField(config.rootPanel, "Max history length", "maxHistory", 50);
 
+            PauseMenuButtonType = new EnumField<PauseMenuButtonTypeEnum>(config.rootPanel, "Pause menu button type",
+                "pauseMenuButtonType", PauseMenuButtonTypeEnum.Corner);
+            PauseMenuButtonType.postValueChangeEvent += (PauseMenuButtonTypeEnum newValue) => {
+                NotificationController.UpdatePopupTail();
+                MenuPatcher.UpdateAppearance();
+            };
+
             new ConfigHeader(config.rootPanel, "", 10);
             new ConfigHeader(config.rootPanel, "-- DEBUG --", 24);
             ShowDebugOptions = new BoolField(config.rootPanel, "Show debug options", "showDebugOptions", false);
-            ShowDebugOptions.postValueChangeEvent += (bool b) => {
-                UpdateDebugOptionsVisibility();
-            };
+            ShowDebugOptions.postValueChangeEvent += (bool b) => { UpdateDebugOptionsVisibility(); };
             SendTestNotificationButton =
                 new ButtonField(config.rootPanel, "Send test notification", "testNotification");
             SendTestNotificationButton.onClick += () => {
