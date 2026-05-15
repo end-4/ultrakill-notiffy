@@ -259,6 +259,13 @@ namespace Notiffy.UI {
             _notifPanel.name = PanelObjectName; // Give it a fixed name to find later
             Object.DontDestroyOnLoad(_notifPanel);
 
+            // Add effect
+            SlideFadeToggleEffect fx = _notifPanel.AddComponent<SlideFadeToggleEffect>();
+            fx.OnExitComplete += () => {
+                _notifPanel.SetActive(false);
+            };
+            fx.hiddenOffset = new Vector2(_notifPanel.GetComponent<RectTransform>().sizeDelta.x, 0);
+
             // Hook buttons
             Button closeButton = _notifPanel.transform.Find("NotiffyPanelClose/CloseButton").GetComponent<Button>();
             closeButton.onClick.AddListener(ClosePanel);
@@ -319,8 +326,13 @@ namespace Notiffy.UI {
 
         public static void TogglePanel() {
             if (_notifPanel is null || _notifPopupPanel is null) return;
-            _notifPanel.SetActive(!_notifPanel.activeSelf);
-            _notifPopupPanel.SetActive(!_notifPanel.activeSelf);
+            if (!_notifPanel.activeSelf) {
+                _notifPanel.SetActive(true);
+                _notifPopupPanel.SetActive(false);
+            } else {
+                _notifPanel.GetComponent<SlideFadeToggleEffect>().StartExit();
+                _notifPopupPanel.SetActive(true);
+            }
             if (_notifPanel.activeSelf) {
                 NotificationSystem.Server.ClearNotifications(false);
                 LayoutRebuilder.ForceRebuildLayoutImmediate(_notifPanel.transform

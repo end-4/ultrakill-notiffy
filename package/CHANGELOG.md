@@ -1,8 +1,9 @@
 ## 0.1.2
 
 - Added a "Show all notifications" button at the bottom of the popup stack
-- Changed to package structure to be more friendly non-mod manager users
+- Changed the package structure to be more friendly non-mod manager users
 - Made positioning of the button on pause menu customizable
+- Added panel animation
 
 ## 0.1.1
 
