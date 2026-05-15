@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 namespace Notiffy;
 
-public static class UserHints {
+internal static class UserHints {
     private static void IssueFirstRunNoticeIfNecessary() {
         if (!ConfigManager.FirstRun.value) return;
         ConfigManager.FirstRun.value = false;

@@ -3,7 +3,17 @@ using UnityEngine;
 
 namespace Notiffy.Utils {
     // https://discussions.unity.com/t/generating-sprites-dynamically-from-png-or-jpeg-files-in-c/591103/5
+    /// <summary>
+    /// Helper for loading sprites from file.
+    /// </summary>
     public static class Img2Sprite {
+        /// <summary>
+        /// Creates a sprite from an image file
+        /// </summary>
+        /// <param name="filePath">Path to the file</param>
+        /// <param name="pixelsPerUnit"></param>
+        /// <param name="spriteType"></param>
+        /// <returns>The new sprite</returns>
         public static Sprite LoadNewSprite(string filePath, float pixelsPerUnit = 100.0f,
             SpriteMeshType spriteType = SpriteMeshType.Tight) {
             // Load a PNG or JPG image from disk to a Texture2D, assign this texture to a new sprite and return its reference
@@ -15,6 +25,13 @@ namespace Notiffy.Utils {
             return newSprite;
         }
 
+        /// <summary>
+        /// Constructs a sprite for a given texture.
+        /// </summary>
+        /// <param name="texture">The texture</param>
+        /// <param name="pixelsPerUnit"></param>
+        /// <param name="spriteType"></param>
+        /// <returns>The new sprite</returns>
         public static Sprite ConvertTextureToSprite(Texture2D texture, float pixelsPerUnit = 100.0f,
             SpriteMeshType spriteType = SpriteMeshType.Tight) {
             // Converts a Texture2D to a sprite, assign this texture to a new sprite and return its reference
@@ -25,6 +42,11 @@ namespace Notiffy.Utils {
             return NewSprite;
         }
 
+        /// <summary>
+        /// Creates a Texture2D from an image file
+        /// </summary>
+        /// <param name="FilePath">Path to the file</param>
+        /// <returns></returns>
         public static Texture2D LoadTexture(string FilePath) {
             // Load a PNG or JPG file from disk to a Texture2D
             // Returns null if load fails
