@@ -1,7 +1,7 @@
 {
     "name": "Notiffy",
     "author": "end_4",
-    "version_number": "0.1.1",
+    "version_number": "0.1.2",
     "website_url": "https://github.com/end-4/ultrakill-notiffy",
     "description": "Notification system for Ultrakill. This is a library and does nothing on its own.",
     "dependencies": [
