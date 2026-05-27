@@ -219,13 +219,13 @@ namespace Notiffy.UI {
         }
 
         public static void UpdatePanelEmptyPlaceholder() {
-            if (_notifPanel is null) return;
+            if (_notifPanel == null) return;
             GameObject placeholder = _notifPanel.transform.Find("Scroll View/EmptyPlaceholder").gameObject;
             placeholder.SetActive(NotifObjectDict.Count == 0);
         }
 
         private static void UpdatePopupTailText() {
-            if (_notifPopupPanel is null) return;
+            if (_notifPopupPanel == null) return;
             bool hasPopupNotif = PopupNotifObjectDict.Count > 0;
             string showWhat = hasPopupNotif ? "all notifications" : "notifications";
             string newString = $"Show {showWhat}<size=80%> [{ConfigManager.GetFormattedPanelKeybind()}]";
@@ -236,7 +236,7 @@ namespace Notiffy.UI {
         }
 
         public static void UpdatePopupTail() {
-            if (_notifPopupPanel is null) return;
+            if (_notifPopupPanel == null) return;
             UpdatePopupTailText();
             GameObject showAllRow = _notifPopupPanel.transform.Find("ShowAllRow").gameObject;
             bool countCondition = PopupNotifObjectDict.Count > 0 && PopupNotifObjectDict.Count < NotifObjectDict.Count;
@@ -325,7 +325,7 @@ namespace Notiffy.UI {
         }
 
         public static void TogglePanel() {
-            if (_notifPanel is null || _notifPopupPanel is null) return;
+            if (_notifPanel == null || _notifPopupPanel == null) return;
             if (!_notifPanel.activeSelf) {
                 _notifPanel.SetActive(true);
                 _notifPopupPanel.SetActive(false);
@@ -341,12 +341,12 @@ namespace Notiffy.UI {
         }
 
         public static void OpenPanel() {
-            if (_notifPanel is null || _notifPopupPanel is null) return;
+            if (_notifPanel == null || _notifPopupPanel == null) return;
             if (!_notifPanel.activeSelf) TogglePanel();
         }
 
         public static void ClosePanel() {
-            if (_notifPanel is null || _notifPopupPanel is null) return;
+            if (_notifPanel == null || _notifPopupPanel == null) return;
             if (_notifPanel.activeSelf) TogglePanel();
         }
     }

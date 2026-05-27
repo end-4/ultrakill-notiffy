@@ -51,7 +51,7 @@ public class SlideFadeToggleEffect : MonoBehaviour {
 
     private void OnEnable() {
         rect.anchoredPosition = hiddenPos;
-        if (canvasGroup is not null) canvasGroup.alpha = hiddenAlpha;
+        if (canvasGroup != null) canvasGroup.alpha = hiddenAlpha;
         currentState = State.Entering;
     }
 
@@ -96,13 +96,13 @@ public class SlideFadeToggleEffect : MonoBehaviour {
 
         // Apply movement
         rect.anchoredPosition = Vector2.MoveTowards(currentPos, targetPos, moveStep);
-        if (canvasGroup is not null) {
+        if (canvasGroup != null) {
             canvasGroup.alpha = Mathf.MoveTowards(currentAlpha, targetAlpha, alphaStep);
         }
 
         // Check Completion
         if (rect.anchoredPosition == targetPos &&
-            (canvasGroup is null || Mathf.Approximately(canvasGroup.alpha, targetAlpha))) {
+            (canvasGroup == null || Mathf.Approximately(canvasGroup.alpha, targetAlpha))) {
             State finishedState = currentState;
             currentState = State.Idle;
             currentExitSpeed = 0f;
