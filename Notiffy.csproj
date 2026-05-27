@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <DebugType>embedded</DebugType>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <LangVersion>default</LangVersion>
         <Nullable>enable</Nullable>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <TargetFramework>netstandard2.1</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
