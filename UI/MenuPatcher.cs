@@ -78,9 +78,7 @@ internal static class MenuPatcher {
         // Add icon
         GameObject? childText = FindNestedObject(_notifButton, "Text");
         if (childText != null) Object.Destroy(childText);
-        GameObject btnIconPrefab = NotificationController.Bundle.LoadAsset<GameObject>("NotiffyToggleIcon");
-        GameObject btnIcon = Object.Instantiate(btnIconPrefab);
-        btnIcon.transform.SetParent(_notifButton.transform, false);
+        GameObject btnIcon = Object.Instantiate(NotificationController.ToggleIconPrefab, _notifButton.transform);
 
         // Ensure the icon is centered and scaled correctly within the button
         RectTransform iconRt = btnIcon.GetComponent<RectTransform>();

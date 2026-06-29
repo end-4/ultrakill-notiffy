@@ -15,6 +15,12 @@ using Object = UnityEngine.Object;
 namespace Notiffy.UI {
     internal static class NotificationController {
         private static readonly string BundlePath = Path.Combine(NotiffyPlugin.workingDir, "assets", "notiffy_ui");
+        private static GameObject NotifPanelPrefab;
+        private static GameObject NotifPopupPanelPrefab;
+        private static GameObject NotifPrefab;
+        private static GameObject ActionButtonPrefab;
+        internal static GameObject ToggleIconPrefab;
+
         private static GameObject? _notifPanel;
         private static GameObject? _notifPopupPanel;
         private static readonly NotificationServer Server = NotificationSystem.Server;
@@ -41,6 +47,12 @@ namespace Notiffy.UI {
         static NotificationController() {
             if (Bundle != null) return;
             Bundle = AssetBundle.LoadFromFile(BundlePath);
+            NotifPanelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPanel");
+            NotifPopupPanelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPopupContent");
+            NotifPrefab = Bundle.LoadAsset<GameObject>("NotiffyNotification");
+            ActionButtonPrefab = Bundle.LoadAsset<GameObject>("NotiffyActionButton");
+            ToggleIconPrefab = Bundle.LoadAsset<GameObject>("NotiffyToggleIcon");
+            Bundle.UnloadAsync(false);
             if (Bundle == null) NotiffyPlugin.Log.LogError("Could not find asset bundle!");
 
             SceneManager.sceneLoaded += OnSceneLoaded;
@@ -155,12 +167,8 @@ namespace Notiffy.UI {
         }
 
         private static GameObject? CreateNotificationGameObject(Notification notif, uint id, bool isPopup = false) {
-            // Load prefab from bundle
-            GameObject notifPrefab = Bundle.LoadAsset<GameObject>("NotiffyNotification");
-            // NotiffyPlugin.Log.LogInfo($"Prefab asset: {notifPrefab}");
-
             // Make the game object
-            GameObject newNotifObj = Object.Instantiate(notifPrefab);
+            GameObject newNotifObj = Object.Instantiate(NotifPrefab);
             Button closeButton = newNotifObj.transform.Find("CloseButton").GetComponent<Button>();
             closeButton.onClick.AddListener(isPopup
                 ? () => { NotificationSystem.Server.CloseNotification(id, ClosedReason.Dismissed); }
@@ -170,11 +178,10 @@ namespace Notiffy.UI {
             Transform actionLayout = newNotifObj.transform.Find("NotificationTextLayout/ActionLayout");
             Transform textLayout = newNotifObj.transform.Find("NotificationTextLayout");
             if (notif.Actions?.Count > 0) {
-                GameObject actionButtonPrefab = Bundle.LoadAsset<GameObject>("NotiffyActionButton");
                 for (int i = 0; i + 1 < notif.Actions.Count; i += 2) {
                     string identifier = notif.Actions[i];
                     string displayText = notif.Actions[i + 1];
-                    GameObject actionButton = Object.Instantiate(actionButtonPrefab);
+                    GameObject actionButton = Object.Instantiate(ActionButtonPrefab);
                     actionButton.transform.SetParent(actionLayout.transform, false);
                     actionButton.GetComponentInChildren<TextMeshProUGUI>().text = displayText;
                     actionButton.GetComponent<Button>().onClick.AddListener(() => {
@@ -254,12 +261,8 @@ namespace Notiffy.UI {
         }
 
         private static void LoadPanelFromBundle() {
-            NotiffyPlugin.Log.LogInfo("Loading notif panel");
-            // Load prefab
-            GameObject panelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPanel");
-
             // Instantiate
-            _notifPanel = Object.Instantiate(panelPrefab);
+            _notifPanel = Object.Instantiate(NotifPanelPrefab);
             _notifPanel.hideFlags = HideFlags.HideAndDontSave;
             _notifPanel.SetActive(false);
             Object.DontDestroyOnLoad(_notifPanel);
@@ -288,9 +291,7 @@ namespace Notiffy.UI {
         }
 
         private static void LoadPopupPanelFromBundle() {
-            NotiffyPlugin.Log.LogInfo("Loading notif popup panel");
-            GameObject popupPrefab = Bundle.LoadAsset<GameObject>("NotiffyPopupContent");
-            _notifPopupPanel = Object.Instantiate(popupPrefab);
+            _notifPopupPanel = Object.Instantiate(NotifPopupPanelPrefab);
             _notifPopupPanel.SetActive(true);
             _notifPopupPanel.hideFlags = HideFlags.HideAndDontSave;
 
