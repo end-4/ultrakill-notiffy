@@ -23,16 +23,14 @@ namespace Notiffy {
 
         void Awake() {
             Log = BepInEx.Logging.Logger.CreateLogSource(PluginName);
-            Log.LogInfo("Notiffy is waking up...");
             ConfigManager.Initialize();
             NotificationSystem.Initialize();
             NotificationController.Initialize();
             MenuPatcher.Initialize();
             UserHints.Initialize();
-
-            Log.LogInfo("Notiffy Initialized");
             Harmony harmony = new Harmony("Notiffy");
             harmony.PatchAll();
+            Log.LogInfo("Notiffy loaded");
         }
 
         float previousTimeScale = 0;

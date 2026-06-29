@@ -58,13 +58,18 @@ internal static class MenuPatcher {
         // Find og
         GameObject canvas = SceneManager.GetActiveScene().GetRootGameObjects()
             .Where(obj => obj.name == "Canvas").FirstOrDefault();
+        if (canvas == null) {
+            NotiffyPlugin.Log.LogWarning(
+                $"Canvas not found, cannot patch pause menu. Scene: {SceneHelper.CurrentScene}");
+            return;
+        }
+
         if (FindNestedObject(canvas, $"PauseMenu/{PauseNotifToggleButtonName}", warnings: false)) return;
         GameObject? pauseMenu = FindNestedObject(canvas, "PauseMenu");
         GameObject? resumeButton = FindNestedObject(canvas, "PauseMenu/Resume");
         if (pauseMenu == null || resumeButton == null) return;
         // Clone
-        _notifButton = Object.Instantiate(resumeButton);
-        _notifButton.transform.SetParent(pauseMenu.transform, false);
+        _notifButton = Object.Instantiate(resumeButton, pauseMenu.transform);
         _notifButton.name = PauseNotifToggleButtonName;
         // Set click behavior
         Button buttonComponent = _notifButton.GetComponent<Button>();

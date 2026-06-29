@@ -256,8 +256,6 @@ namespace Notiffy.UI {
         }
 
         private static void LoadPanelFromBundle() {
-            // NotiffyPlugin.Log.LogInfo("RE-INSTANTIATING PANEL");
-
             // Load prefab
             GameObject panelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPanel");
 
@@ -270,9 +268,7 @@ namespace Notiffy.UI {
 
             // Add effect
             SlideFadeToggleEffect fx = _notifPanel.AddComponent<SlideFadeToggleEffect>();
-            fx.OnExitComplete += () => {
-                _notifPanel.SetActive(false);
-            };
+            fx.OnExitComplete += () => { _notifPanel.SetActive(false); };
             fx.hiddenOffset = new Vector2(_notifPanel.GetComponent<RectTransform>().sizeDelta.x, 0);
 
             // Hook buttons
@@ -294,7 +290,6 @@ namespace Notiffy.UI {
         }
 
         private static void LoadPopupPanelFromBundle() {
-            // NotiffyPlugin.Log.LogInfo("RE-INSTANTIATING POPUP PANEL");
             GameObject popupPrefab = Bundle.LoadAsset<GameObject>("NotiffyPopupContent");
             _notifPopupPanel = Object.Instantiate(popupPrefab);
             _notifPopupPanel.SetActive(true);
@@ -309,14 +304,9 @@ namespace Notiffy.UI {
         }
 
         private static void ParentStuffToCanvas() {
-            // Find or create the panels
-            if (_notifPanel == null) {
-                // Try finding them first (it might have survived scene load)
-                _notifPanel = GameObject.Find(PanelObjectName);
-                _notifPopupPanel = GameObject.Find(PopupPanelObjectName);
-                if (_notifPanel == null) LoadPanelFromBundle();
-                if (_notifPopupPanel == null) LoadPopupPanelFromBundle();
-            }
+            // Create panels if necessary
+            if (_notifPanel == null) LoadPanelFromBundle();
+            if (_notifPopupPanel == null) LoadPopupPanelFromBundle();
 
             // Find the Canvas in the new scene
             GameObject canvas = SceneManager.GetActiveScene().GetRootGameObjects()
@@ -342,6 +332,7 @@ namespace Notiffy.UI {
                 _notifPanel.GetComponent<SlideFadeToggleEffect>().StartExit();
                 _notifPopupPanel.SetActive(true);
             }
+
             if (_notifPanel.activeSelf) {
                 NotificationSystem.Server.ClearNotifications(false);
                 LayoutRebuilder.ForceRebuildLayoutImmediate(_notifPanel.transform
