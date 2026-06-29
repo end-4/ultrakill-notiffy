@@ -17,8 +17,6 @@ namespace Notiffy.UI {
         private static readonly string BundlePath = Path.Combine(NotiffyPlugin.workingDir, "assets", "notiffy_ui");
         private static GameObject? _notifPanel;
         private static GameObject? _notifPopupPanel;
-        private const string PanelObjectName = "NotiffyPanel";
-        private const string PopupPanelObjectName = "NotiffyPopupPanel";
         private static readonly NotificationServer Server = NotificationSystem.Server;
         internal static readonly AssetBundle Bundle;
 
@@ -256,14 +254,14 @@ namespace Notiffy.UI {
         }
 
         private static void LoadPanelFromBundle() {
+            NotiffyPlugin.Log.LogInfo("Loading notif panel");
             // Load prefab
             GameObject panelPrefab = Bundle.LoadAsset<GameObject>("NotiffyPanel");
 
             // Instantiate
             _notifPanel = Object.Instantiate(panelPrefab);
-            _notifPanel.SetActive(true);
+            _notifPanel.hideFlags = HideFlags.HideAndDontSave;
             _notifPanel.SetActive(false);
-            _notifPanel.name = PanelObjectName; // Give it a fixed name to find later
             Object.DontDestroyOnLoad(_notifPanel);
 
             // Add effect
@@ -290,10 +288,11 @@ namespace Notiffy.UI {
         }
 
         private static void LoadPopupPanelFromBundle() {
+            NotiffyPlugin.Log.LogInfo("Loading notif popup panel");
             GameObject popupPrefab = Bundle.LoadAsset<GameObject>("NotiffyPopupContent");
             _notifPopupPanel = Object.Instantiate(popupPrefab);
             _notifPopupPanel.SetActive(true);
-            _notifPopupPanel.name = PopupPanelObjectName;
+            _notifPopupPanel.hideFlags = HideFlags.HideAndDontSave;
 
             Button showAllButton = _notifPopupPanel.transform.Find("ShowAllRow/ShowAllButton").GetComponent<Button>();
             showAllButton.onClick.AddListener(OpenPanel);
