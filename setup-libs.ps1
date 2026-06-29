@@ -59,6 +59,7 @@ if (-not (Test-Path $R2ModmanProfilePath)) {
 }
 
 $r2Dlls = @(
+    "BepInEx\core\0Harmony.dll"
     "BepInEx\core\BepInEx.dll"
     "BepInEx\plugins\EternalsTeam-PluginConfigurator\PluginConfigurator\PluginConfiguratorComponents.dll"
     "BepInEx\plugins\EternalsTeam-PluginConfigurator\PluginConfigurator\PluginConfigurator.dll"

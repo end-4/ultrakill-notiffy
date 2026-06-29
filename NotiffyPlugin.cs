@@ -2,6 +2,7 @@
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 using Notiffy.API;
 using Notiffy.UI;
 using UnityEngine;
@@ -30,6 +31,8 @@ namespace Notiffy {
             UserHints.Initialize();
 
             Log.LogInfo("Notiffy Initialized");
+            Harmony harmony = new Harmony("Notiffy");
+            harmony.PatchAll();
         }
 
         float previousTimeScale = 0;

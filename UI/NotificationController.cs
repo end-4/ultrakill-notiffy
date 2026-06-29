@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using HarmonyLib;
 using Notiffy.API;
 using Notiffy.Server;
 using TMPro;
@@ -230,7 +231,7 @@ namespace Notiffy.UI {
             placeholder.SetActive(NotifObjectDict.Count == 0);
         }
 
-        private static void UpdatePopupTailText() {
+        internal static void UpdatePopupTailText() {
             if (_notifPopupPanel == null) return;
             bool hasPopupNotif = PopupNotifObjectDict.Count > 0;
             string showWhat = hasPopupNotif ? "all notifications" : "notifications";
@@ -246,8 +247,10 @@ namespace Notiffy.UI {
             UpdatePopupTailText();
             GameObject showAllRow = _notifPopupPanel.transform.Find("ShowAllRow").gameObject;
             bool countCondition = PopupNotifObjectDict.Count > 0 && PopupNotifObjectDict.Count < NotifObjectDict.Count;
-            bool pauseCondition = ConfigManager.PauseMenuButtonType.value == PauseMenuButtonTypeEnum.Corner &&
-                                  (Time.timeScale == 0 && (OptionsManager.Instance?.paused ?? false));
+            bool pauseCondition = (OptionsManager.Instance == null) ||
+                                  ConfigManager.PauseMenuButtonType.value == PauseMenuButtonTypeEnum.Corner &&
+                                  (Time.timeScale == 0 && (OptionsManager.Instance.paused) &&
+                                   !(OptionsManager.Instance.optionsMenu.gameObject.activeInHierarchy));
             showAllRow.GetComponent<HorizontalLayoutGroup>().padding.right = PopupNotifObjectDict.Count > 0 ? 6 : 0;
             showAllRow.SetActive(countCondition || pauseCondition);
         }
@@ -354,6 +357,17 @@ namespace Notiffy.UI {
         public static void ClosePanel() {
             if (_notifPanel == null || _notifPopupPanel == null) return;
             if (_notifPanel.activeSelf) TogglePanel();
+        }
+    }
+
+    public class CloseOptionsPatch {
+        [HarmonyPatch(typeof(OptionsManager), nameof(OptionsManager.CloseOptions)), HarmonyPostfix]
+        static void ClosePostfix(OptionsManager __instance) {
+            NotificationController.UpdatePopupTail();
+        }
+        [HarmonyPatch(typeof(OptionsManager), nameof(OptionsManager.OpenOptions)), HarmonyPostfix]
+        static void OpenPostfix(OptionsManager __instance) {
+            NotificationController.UpdatePopupTail();
         }
     }
 }

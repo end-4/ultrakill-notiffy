@@ -9,6 +9,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <Reference Include="0Harmony">
+        <HintPath>libs\Managed\0Harmony.dll</HintPath>
+      </Reference>
       <Reference Include="Assembly-CSharp">
         <HintPath>libs\Managed\Assembly-CSharp.dll</HintPath>
       </Reference>
