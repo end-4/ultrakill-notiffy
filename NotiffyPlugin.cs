@@ -9,6 +9,7 @@ using Input = UnityEngine.Input;
 
 namespace Notiffy {
     [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
+    [BepInDependency("com.eternalUnion.pluginConfigurator")]
     public class NotiffyPlugin : BaseUnityPlugin {
         public const string PluginGUID = "com.github.end-4.notiffy";
         public const string PluginName = "Notiffy";
