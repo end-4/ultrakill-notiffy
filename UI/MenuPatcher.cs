@@ -1,9 +1,9 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Linq;
 using UnityEngine.UI;
-using TMPro;
-using System.ComponentModel;
+using Object = UnityEngine.Object;
 
 namespace Notiffy.UI;
 
@@ -36,7 +36,11 @@ internal static class MenuPatcher {
     }
 
     private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
-        PatchPauseMenu();
+        try {
+            PatchPauseMenu();
+        } catch (Exception e) {
+            NotiffyPlugin.Log.LogError("MenuPatcher scene load error " + e);
+        }
     }
 
     public static void UpdateAppearance() {

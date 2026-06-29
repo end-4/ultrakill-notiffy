@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Notiffy.API;
@@ -8,6 +9,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.AddressableAssets;
 using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 namespace Notiffy.UI {
     internal static class NotificationController {
@@ -54,10 +56,14 @@ namespace Notiffy.UI {
         }
 
         private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
-            ParentStuffToCanvas();
-            UpdateSilentButtonFill();
-            // We hook this here because the first scene is loaded after things are already initialized
-            NotificationSystem.SignalReadyForScene();
+            try {
+                ParentStuffToCanvas();
+                UpdateSilentButtonFill();
+                // We hook this here because the first scene is loaded after things are already initialized
+                NotificationSystem.SignalReadyForScene();
+            } catch (Exception e) {
+                NotiffyPlugin.Log.LogError("NotificationController scene load error " + e);
+            }
         }
 
         private static void OnNotificationAdded(uint id, Notification notif) {
