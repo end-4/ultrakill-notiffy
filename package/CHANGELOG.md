@@ -2,7 +2,8 @@
 
 - Made "Show all notifications" not shown in options menu
 - Fixed the error in console on startup relating to MenuPatcher and error spamming from race conditions with certain mods
-- Prevent failing scene load initializations from messing up other mods
+- Fixed failing scene load initializations and prevent them from messing up other mods
+- Tweaked some icons for readability
 
 ## 0.1.2
 

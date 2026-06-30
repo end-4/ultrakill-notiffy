@@ -152,7 +152,7 @@ namespace Notiffy.UI {
         }
 
         private static void UpdateNotificationGameObjectContent(GameObject notifObj, Notification notif) {
-            TextMeshProUGUI summary = notifObj.transform.Find("NotificationTextLayout/SummaryText")
+            TextMeshProUGUI summary = notifObj.transform.Find("NotificationTextLayout/SummaryRow/SummaryText")
                 .GetComponent<TextMeshProUGUI>();
             summary.text = notif.Summary;
 
@@ -169,7 +169,7 @@ namespace Notiffy.UI {
         private static GameObject? CreateNotificationGameObject(Notification notif, uint id, bool isPopup = false) {
             // Make the game object
             GameObject newNotifObj = Object.Instantiate(NotifPrefab);
-            Button closeButton = newNotifObj.transform.Find("CloseButton").GetComponent<Button>();
+            Button closeButton = newNotifObj.transform.Find("NotificationTextLayout/SummaryRow/CloseButton").GetComponent<Button>();
             closeButton.onClick.AddListener(isPopup
                 ? () => { NotificationSystem.Server.CloseNotification(id, ClosedReason.Dismissed); }
                 : () => { NotificationSystem.Server.DeleteNotification(id); });
@@ -251,7 +251,7 @@ namespace Notiffy.UI {
             if (_notifPopupPanel == null) return;
             UpdatePopupTailText();
             GameObject showAllRow = _notifPopupPanel.transform.Find("ShowAllRow").gameObject;
-            bool countCondition = PopupNotifObjectDict.Count > 0 && PopupNotifObjectDict.Count < NotifObjectDict.Count;
+            bool countCondition = PopupNotifObjectDict.Count > 0;
             bool pauseCondition = (OptionsManager.Instance == null) ||
                                   ConfigManager.PauseMenuButtonType.value == PauseMenuButtonTypeEnum.Corner &&
                                   (Time.timeScale == 0 && (OptionsManager.Instance.paused) &&

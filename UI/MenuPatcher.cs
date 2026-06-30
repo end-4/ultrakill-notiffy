@@ -59,7 +59,7 @@ internal static class MenuPatcher {
         GameObject canvas = SceneManager.GetActiveScene().GetRootGameObjects()
             .Where(obj => obj.name == "Canvas").FirstOrDefault();
         if (canvas == null) {
-            NotiffyPlugin.Log.LogWarning(
+            if (SceneHelper.CurrentScene != "Bootstrap") NotiffyPlugin.Log.LogWarning(
                 $"Canvas not found, cannot patch pause menu. Scene: {SceneHelper.CurrentScene}");
             return;
         }
