@@ -14,7 +14,7 @@ namespace Notiffy {
     public class NotiffyPlugin : BaseUnityPlugin {
         public const string PluginGUID = "com.github.end-4.notiffy";
         public const string PluginName = "Notiffy";
-        public const string PluginVersion = "0.1.2";
+        public const string PluginVersion = "0.1.3";
         public static string workingPath = Assembly.GetExecutingAssembly().Location;
         public static string workingDir = Path.GetDirectoryName(workingPath);
 
