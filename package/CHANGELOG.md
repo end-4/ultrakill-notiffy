@@ -1,3 +1,8 @@
+## 0.1.4
+
+- Fixed errors in console that SEEMED to be unrelated, but breaks stuff
+- Rebuilt against the correct version of BepInEx
+
 ## 0.1.3
 
 - Made "Show all notifications" not shown in options menu
