@@ -32,15 +32,7 @@ internal static class MenuPatcher {
     }
 
     static MenuPatcher() {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
-        try {
-            PatchPauseMenu();
-        } catch (Exception e) {
-            NotiffyPlugin.Log.LogError("MenuPatcher scene load error " + e);
-        }
+        NotiffyPlugin.SafeSceneLoaded += PatchPauseMenu;
     }
 
     public static void UpdateAppearance() {

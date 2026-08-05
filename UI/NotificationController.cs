@@ -55,7 +55,7 @@ namespace Notiffy.UI {
             Bundle.UnloadAsync(false);
             if (Bundle == null) NotiffyPlugin.Log.LogError("Could not find asset bundle!");
 
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            NotiffyPlugin.SafeSceneLoaded += OnSceneLoaded;
 
             Server.OnNotificationAdded += OnNotificationAdded;
             Server.OnNotificationUpdated += OnNotificationUpdated;
@@ -66,7 +66,7 @@ namespace Notiffy.UI {
         public static void Initialize() {
         }
 
-        private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
+        private static void OnSceneLoaded() {
             try {
                 ParentStuffToCanvas();
                 UpdateSilentButtonFill();
@@ -169,7 +169,8 @@ namespace Notiffy.UI {
         private static GameObject? CreateNotificationGameObject(Notification notif, uint id, bool isPopup = false) {
             // Make the game object
             GameObject newNotifObj = Object.Instantiate(NotifPrefab);
-            Button closeButton = newNotifObj.transform.Find("NotificationTextLayout/SummaryRow/CloseButton").GetComponent<Button>();
+            Button closeButton = newNotifObj.transform.Find("NotificationTextLayout/SummaryRow/CloseButton")
+                .GetComponent<Button>();
             closeButton.onClick.AddListener(isPopup
                 ? () => { NotificationSystem.Server.CloseNotification(id, ClosedReason.Dismissed); }
                 : () => { NotificationSystem.Server.DeleteNotification(id); });
@@ -356,6 +357,7 @@ namespace Notiffy.UI {
         static void ClosePostfix(OptionsManager __instance) {
             NotificationController.UpdatePopupTail();
         }
+
         [HarmonyPatch(typeof(OptionsManager), nameof(OptionsManager.OpenOptions)), HarmonyPostfix]
         static void OpenPostfix(OptionsManager __instance) {
             NotificationController.UpdatePopupTail();

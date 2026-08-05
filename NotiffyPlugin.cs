@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Logging;
@@ -6,6 +7,7 @@ using HarmonyLib;
 using Notiffy.API;
 using Notiffy.UI;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Input = UnityEngine.Input;
 
 namespace Notiffy {
@@ -18,8 +20,8 @@ namespace Notiffy {
         public static string workingPath = Assembly.GetExecutingAssembly().Location;
         public static string workingDir = Path.GetDirectoryName(workingPath);
 
-        // Use the built-in Logger provided by BaseUnityPlugin
         internal static ManualLogSource Log;
+        internal static event Action SafeSceneLoaded;
 
         void Awake() {
             Log = BepInEx.Logging.Logger.CreateLogSource(PluginName);
@@ -30,7 +32,18 @@ namespace Notiffy {
             UserHints.Initialize();
             Harmony harmony = new Harmony("Notiffy");
             harmony.PatchAll();
+            SceneManager.sceneLoaded += OnSceneLoaded;
             Log.LogInfo("Notiffy loaded");
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
+            try {
+                if (string.IsNullOrEmpty(SceneHelper.CurrentScene) || SceneHelper.CurrentScene == "Bootstrap" ||
+                    SceneHelper.CurrentScene == "Intro") return;
+                SafeSceneLoaded?.Invoke();
+            } catch (Exception e) {
+                Log.LogInfo($"Error on scene load: {e}");
+            }
         }
 
         float previousTimeScale = 0;

@@ -14,18 +14,14 @@ internal static class UserHints {
             iconFilePath: Path.Combine(NotiffyPlugin.workingDir, "icon.png"));
     }
 
-    private static void OnSceneLoaded(Scene s, LoadSceneMode m) {
-        try {
-            IssueFirstRunNoticeIfNecessary();
-        } catch (Exception e) {
-            NotiffyPlugin.Log.LogError("UserHints scene load error " + e);
-        }
+    private static void OnSceneLoaded() {
+        IssueFirstRunNoticeIfNecessary();
     }
 
     public static void Initialize() {
     }
 
     static UserHints() {
-        SceneManager.sceneLoaded += OnSceneLoaded;
+        NotiffyPlugin.SafeSceneLoaded += OnSceneLoaded;
     }
 }
